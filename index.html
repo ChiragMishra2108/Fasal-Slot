@@ -1,0 +1,2831 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Fasal-Slot — Farmer Procurement Slot Booking & Queue Management</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+/* ─── DESIGN TOKENS ─── */
+:root {
+  --color-primary: #177B3E;
+  --color-on-primary: #FFFFFF;
+  --color-secondary: #1CB74B;
+  --color-on-secondary: #0F172A;
+  --color-accent: #8A5107;
+  --color-on-accent: #FFFFFF;
+  --color-bg: #D9FBE4;
+  --color-fg: #14532D;
+  --color-card: #FCFCFC;
+  --color-card-fg: #14532D;
+  --color-muted: #D9E7E8;
+  --color-muted-fg: #576579;
+  --color-border: #BBF7D0;
+  --color-ring: #15803D;
+  --color-destructive: #DC2626;
+  --color-on-destructive: #FFFFFF;
+  --color-success-bg: #dcfce7;
+  --color-success-fg: #166534;
+  --color-warning-bg: #fef9c3;
+  --color-warning-fg: #854d0e;
+  --color-error-bg: #fee2e2;
+  --color-error-fg: #991b1b;
+  --color-info-bg: #dbeafe;
+  --color-info-fg: #1e40af;
+  --color-gray-bg: #f1f5f9;
+  --color-gray-fg: #475569;
+  --color-orange-bg: #ffedd5;
+  --color-orange-fg: #9a3412;
+  --color-primary-dark: #14632f;
+  --color-secondary-dark: #18a340;
+  --color-accent-dark: #6d3f06;
+  --color-destructive-dark: #b91c1c;
+  --color-yellow-bar: #ca8a04;
+  --color-white: #ffffff;
+  --color-primary-6: rgba(23,123,62,0.06);
+  --color-primary-8: rgba(23,123,62,0.08);
+  --color-fg-6: rgba(20,83,45,0.06);
+  --color-black-50: rgba(0,0,0,0.5);
+  --color-black-70: rgba(0,0,0,0.7);
+  --color-black-90: rgba(0,0,0,0.9);
+  --color-black-02: rgba(0,0,0,0.02);
+  --color-white-60: rgba(255,255,255,0.6);
+  --color-white-80: rgba(255,255,255,0.8);
+  --color-white-50: rgba(255,255,255,0.5);
+  --color-border-info: #bfdbfe;
+  --color-border-success: #bbf7d0;
+  --color-border-warning: #fde047;
+  --color-border-error: #fecaca;
+  --font-heading: 'Orbitron', serif;
+  --font-body: 'JetBrains Mono', monospace;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --shadow-sm: 0 1px 2px rgba(20,83,45,0.08);
+  --shadow-md: 0 4px 12px rgba(20,83,45,0.12);
+  --shadow-lg: 0 12px 32px rgba(20,83,45,0.16);
+}
+
+::selection { background-color: var(--color-accent); color: var(--color-on-accent); }
+
+/* ─── RESET & BASE ─── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:16px;scroll-behavior:smooth}
+body{font-family:var(--font-body);background:var(--color-bg);color:var(--color-fg);line-height:1.6;min-height:100vh;-webkit-font-smoothing:antialiased}
+h1,h2,h3,h4,h5,h6{font-family:var(--font-heading);font-weight:700;letter-spacing:0.04em;line-height:1.25;color:var(--color-fg)}
+a{color:var(--color-primary);text-decoration:none}a:hover{text-decoration:underline}
+button{font-family:var(--font-body);cursor:pointer;border:none;outline:none}button:focus-visible{outline:2px solid var(--color-ring);outline-offset:2px}
+input,select,textarea{font-family:var(--font-body);font-size:0.95rem;color:var(--color-fg);background:var(--color-card);border:1.5px solid var(--color-border);border-radius:var(--radius-sm);padding:0.6rem 0.8rem;width:100%;transition:border-color .2s,box-shadow .2s}
+input:focus,select:focus,textarea:focus{border-color:var(--color-primary);box-shadow:0 0 0 3px rgba(21,128,61,0.15)}
+label{display:block;font-size:0.8rem;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:0.35rem;color:var(--color-muted-fg)}
+table{width:100%;border-collapse:collapse;font-size:0.88rem}
+th,td{padding:0.65rem 0.75rem;text-align:left;border-bottom:1px solid var(--color-border)}
+th{font-family:var(--font-heading);font-size:0.75rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--color-muted-fg);background:var(--color-muted)}
+tr:hover td{background:rgba(21,128,61,0.03)}
+img{max-width:100%;height:auto;display:block}
+
+/* ─── UTILITIES ─── */
+.container{max-width:1200px;margin:0 auto;padding:0 1.25rem}
+.container-narrow{max-width:560px;margin:0 auto;padding:0 1.25rem}
+.flex{display:flex}.flex-col{flex-direction:column}.items-center{align-items:center}.justify-between{justify-content:space-between}.justify-center{justify-content:center}.gap-1{gap:0.5rem}.gap-2{gap:1rem}.gap-3{gap:1.5rem}
+.grid{display:grid}
+.hidden{display:none !important}
+.w-full{width:100%}.h-full{height:100%}
+.text-center{text-align:center}
+.text-xs{font-size:0.7rem}.text-sm{font-size:0.82rem}.text-lg{font-size:1.1rem}.text-xl{font-size:1.35rem}
+.font-bold{font-weight:700}
+.mt-1{margin-top:0.5rem}.mt-2{margin-top:1rem}.mt-3{margin-top:1.5rem}.mb-1{margin-bottom:0.5rem}.mb-2{margin-bottom:1rem}.mb-3{margin-bottom:1.5rem}
+.p-1{padding:0.75rem}.p-2{padding:1.25rem}.p-3{padding:2rem}
+.rounded{border-radius:var(--radius-md)}
+.shadow-sm{box-shadow:var(--shadow-sm)}.shadow-md{box-shadow:var(--shadow-md)}.shadow-lg{box-shadow:var(--shadow-lg)}
+
+/* ─── BADGES ─── */
+.badge{display:inline-flex;align-items:center;gap:0.35rem;padding:0.25rem 0.65rem;border-radius:999px;font-size:0.72rem;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;white-space:nowrap}
+.badge-green{background:var(--color-success-bg);color:var(--color-success-fg)}
+.badge-yellow{background:var(--color-warning-bg);color:var(--color-warning-fg)}
+.badge-red{background:var(--color-error-bg);color:var(--color-error-fg)}
+.badge-blue{background:var(--color-info-bg);color:var(--color-info-fg)}
+.badge-gray{background:var(--color-gray-bg);color:var(--color-gray-fg)}
+.badge-orange{background:var(--color-orange-bg);color:var(--color-orange-fg)}
+
+/* ─── BUTTONS ─── */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:0.5rem;padding:0.7rem 1.4rem;border-radius:var(--radius-md);font-size:0.9rem;font-weight:600;letter-spacing:0.02em;transition:transform .15s,box-shadow .2s,background .2s;white-space:nowrap}
+.btn:active{transform:translateY(1px)}
+.btn-primary{background:var(--color-primary);color:var(--color-on-primary);box-shadow:var(--shadow-sm)}
+.btn-primary:hover{background:var(--color-primary-dark);box-shadow:var(--shadow-md)}
+.btn-secondary{background:var(--color-secondary);color:var(--color-on-secondary);box-shadow:var(--shadow-sm)}
+.btn-secondary:hover{background:var(--color-secondary-dark);box-shadow:var(--shadow-md)}
+.btn-accent{background:var(--color-accent);color:var(--color-on-accent);box-shadow:var(--shadow-sm)}
+.btn-accent:hover{background:var(--color-accent-dark);box-shadow:var(--shadow-md)}
+.btn-outline{background:transparent;color:var(--color-primary);border:1.5px solid var(--color-primary)}
+.btn-outline:hover{background:var(--color-primary-6)}
+.btn-ghost{background:transparent;color:var(--color-fg)}
+.btn-ghost:hover{background:var(--color-fg-6)}
+.btn-danger{background:var(--color-destructive);color:var(--color-on-destructive)}
+.btn-danger:hover{background:var(--color-destructive-dark)}
+.btn-sm{padding:0.45rem 0.9rem;font-size:0.8rem}
+.btn-lg{padding:0.9rem 2rem;font-size:1rem;border-radius:var(--radius-lg)}
+.btn:disabled{opacity:0.5;cursor:not-allowed;transform:none}
+
+/* ─── CARDS ─── */
+.card{background:var(--color-card);border-radius:var(--radius-lg);border:1px solid var(--color-border);box-shadow:var(--shadow-sm);overflow:hidden}
+.card-header{padding:1rem 1.25rem;border-bottom:1px solid var(--color-border);display:flex;align-items:center;justify-content:space-between}
+.card-body{padding:1.25rem}
+.card-footer{padding:1rem 1.25rem;border-top:1px solid var(--color-border);background:rgba(187,247,208,0.2)}
+
+/* ─── NAVBAR ─── */
+.navbar{position:sticky;top:0;z-index:100;background:rgba(217,251,228,0.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--color-border)}
+.navbar-inner{display:flex;align-items:center;justify-content:space-between;padding:0.75rem 1.25rem;max-width:1200px;margin:0 auto}
+.navbar-brand{font-family:var(--font-heading);font-size:1.15rem;font-weight:900;color:var(--color-primary);letter-spacing:0.06em;display:flex;align-items:center;gap:0.5rem}
+.navbar-brand svg{width:28px;height:28px;fill:var(--color-primary)}
+.navbar-nav{display:flex;align-items:center;gap:0.25rem}
+.nav-link{padding:0.5rem 0.75rem;border-radius:var(--radius-sm);font-size:0.82rem;font-weight:500;color:var(--color-fg);transition:background .15s}
+.nav-link:hover,.nav-link.active{background:var(--color-primary-8);color:var(--color-primary);text-decoration:none}
+.nav-actions{display:flex;align-items:center;gap:0.5rem}
+.lang-switch{position:relative}
+.lang-switch select{font-size:0.75rem;padding:0.35rem 0.6rem;width:auto;background:var(--color-card)}
+.notif-btn{position:relative;padding:0.5rem;border-radius:var(--radius-sm);background:transparent}
+.notif-btn:hover{background:var(--color-primary-8)}
+.notif-count{position:absolute;top:2px;right:2px;background:var(--color-destructive);color:var(--color-white);font-size:0.6rem;font-weight:700;padding:0.05rem 0.35rem;border-radius:999px}
+
+/* ─── MOBILE NAV ─── */
+.mobile-menu-btn{display:none;padding:0.5rem;background:transparent;border-radius:var(--radius-sm)}
+.mobile-menu-btn:hover{background:var(--color-primary-8)}
+@media(max-width:768px){
+  .mobile-menu-btn{display:flex}
+  .navbar-nav{display:none;position:absolute;top:100%;left:0;right:0;background:var(--color-bg);border-bottom:1px solid var(--color-border);padding:0.5rem;flex-direction:column}
+  .navbar-nav.open{display:flex}
+  .nav-link{width:100%}
+}
+
+/* ─── PAGE HEADER ─── */
+.page-header{padding:1.5rem 0;border-bottom:1px solid var(--color-border);margin-bottom:1.5rem}
+.page-header h1{font-size:1.5rem;margin-bottom:0.25rem}
+.page-header p{color:var(--color-muted-fg);font-size:0.85rem}
+
+/* ─── PROGRESS STEPS ─── */
+.steps{display:flex;align-items:center;gap:0.5rem;overflow-x:auto;padding-bottom:0.5rem}
+.step{display:flex;align-items:center;gap:0.4rem;font-size:0.75rem;font-weight:600;white-space:nowrap;padding:0.4rem 0.7rem;border-radius:var(--radius-sm);background:var(--color-muted);color:var(--color-muted-fg)}
+.step.active{background:var(--color-primary);color:var(--color-on-primary)}
+.step.completed{background:var(--color-success-bg);color:var(--color-success-fg)}
+.step-arrow{color:var(--color-muted-fg);font-size:0.7rem}
+
+/* ─── FORM GROUPS ─── */
+.form-group{margin-bottom:1rem}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+@media(max-width:560px){.form-row{grid-template-columns:1fr}}
+.form-error{color:var(--color-destructive);font-size:0.78rem;margin-top:0.25rem;display:flex;align-items:center;gap:0.3rem}
+.form-hint{color:var(--color-muted-fg);font-size:0.78rem;margin-top:0.25rem}
+
+/* ─── SEARCHABLE DROPDOWN ─── */
+.search-dropdown{position:relative}
+.search-dropdown input{cursor:pointer}
+.search-dropdown .dropdown-list{position:absolute;top:100%;left:0;right:0;max-height:220px;overflow-y:auto;background:var(--color-card);border:1.5px solid var(--color-border);border-radius:var(--radius-sm);z-index:50;box-shadow:var(--shadow-lg);margin-top:2px;display:none}
+.search-dropdown.open .dropdown-list{display:block}
+.search-dropdown .dropdown-item{padding:0.55rem 0.8rem;font-size:0.85rem;cursor:pointer;border-bottom:1px solid var(--color-border)}
+.search-dropdown .dropdown-item:hover,.search-dropdown .dropdown-item.highlight{background:var(--color-primary-6);color:var(--color-primary)}
+.search-dropdown .dropdown-item:last-child{border-bottom:none}
+
+/* ─── QR CANVAS ─── */
+.qr-wrap{display:flex;flex-direction:column;align-items:center;gap:1rem;padding:1.5rem;background:var(--color-white);border-radius:var(--radius-lg);border:2px dashed var(--color-border)}
+.qr-wrap canvas{display:block}
+
+/* ─── TIMELINE ─── */
+.timeline{position:relative;padding-left:1.5rem}
+.timeline::before{content:'';position:absolute;left:0.45rem;top:0;bottom:0;width:2px;background:var(--color-border)}
+.timeline-item{position:relative;padding-bottom:1.25rem}
+.timeline-item:last-child{padding-bottom:0}
+.timeline-dot{position:absolute;left:-1.5rem;top:0.15rem;width:1rem;height:1rem;border-radius:50%;background:var(--color-muted);border:2px solid var(--color-border);z-index:2}
+.timeline-dot.done{background:var(--color-primary);border-color:var(--color-primary)}
+.timeline-dot.current{background:var(--color-accent);border-color:var(--color-accent);animation:pulse 2s infinite}
+.timeline-content{font-size:0.85rem}
+.timeline-content .status{font-size:0.75rem;font-weight:600;text-transform:uppercase}
+.timeline-content .status.done{color:var(--color-primary)}
+.timeline-content .status.current{color:var(--color-accent)}
+.timeline-content .status.pending{color:var(--color-muted-fg)}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(138,81,7,0.4)}50%{box-shadow:0 0 0 6px rgba(138,81,7,0)}}
+
+/* ─── NOTIFICATIONS ─── */
+.notif-list{display:flex;flex-direction:column;gap:0.5rem}
+.notif-item{display:flex;align-items:flex-start;gap:0.75rem;padding:0.85rem 1rem;border-radius:var(--radius-md);background:var(--color-card);border:1px solid var(--color-border);cursor:pointer;transition:background .15s}
+.notif-item:hover{background:rgba(187,247,208,0.3)}
+.notif-item.unread{border-left:3px solid var(--color-primary)}
+.notif-item.read{opacity:0.75}
+.notif-icon{width:36px;height:36px;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;flex-shrink:0;background:var(--color-muted)}
+.notif-icon svg{width:18px;height:18px;stroke:var(--color-primary)}
+.notif-body{flex:1;min-width:0}
+.notif-title{font-size:0.82rem;font-weight:600;margin-bottom:0.15rem}
+.notif-text{font-size:0.78rem;color:var(--color-muted-fg);line-height:1.4}
+.notif-time{font-size:0.68rem;color:var(--color-muted-fg);white-space:nowrap;margin-top:0.2rem}
+
+/* ─── QUEUE DISPLAY ─── */
+.queue-big{text-align:center;padding:2rem}
+.queue-token{font-family:var(--font-heading);font-size:3.5rem;font-weight:900;color:var(--color-primary);letter-spacing:0.08em}
+.queue-label{font-size:0.8rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--color-muted-fg);margin-top:0.5rem}
+.queue-now-serving{font-size:1.5rem;font-weight:700;color:var(--color-accent);margin-top:1rem}
+.queue-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-top:1.5rem}
+.queue-stat{background:var(--color-card);border-radius:var(--radius-md);padding:1rem;border:1px solid var(--color-border)}
+.queue-stat-value{font-family:var(--font-heading);font-size:1.4rem;font-weight:700;color:var(--color-fg)}
+.queue-stat-label{font-size:0.72rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--color-muted-fg);margin-top:0.25rem}
+
+/* ─── DASHBOARD STATS ─── */
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:1rem}
+.stat-card{background:var(--color-card);border-radius:var(--radius-lg);padding:1.25rem;border:1px solid var(--color-border);box-shadow:var(--shadow-sm)}
+.stat-value{font-family:var(--font-heading);font-size:1.6rem;font-weight:700;color:var(--color-fg)}
+.stat-label{font-size:0.72rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--color-muted-fg);margin-top:0.35rem}
+.stat-card.primary .stat-value{color:var(--color-primary)}
+.stat-card.accent .stat-value{color:var(--color-accent)}
+
+/* ─── CENTRE CARDS ─── */
+.centre-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1rem}
+.centre-card{background:var(--color-card);border-radius:var(--radius-lg);border:1.5px solid var(--color-border);overflow:hidden;transition:box-shadow .2s,transform .15s}
+.centre-card:hover{box-shadow:var(--shadow-md);transform:translateY(-2px)}
+.centre-card-header{padding:1rem 1.25rem;border-bottom:1px solid var(--color-border);display:flex;align-items:center;justify-content:space-between}
+.centre-card-body{padding:1rem 1.25rem;font-size:0.85rem}
+.centre-card-footer{padding:1rem 1.25rem;border-top:1px solid var(--color-border);background:rgba(187,247,208,0.15)}
+.centre-name{font-family:var(--font-heading);font-size:0.95rem;font-weight:700;color:var(--color-primary)}
+.centre-name:hover{color:var(--color-accent)}
+.centre-meta{color:var(--color-muted-fg);font-size:0.78rem;margin-top:0.15rem}
+.centre-capacity-bar{height:6px;border-radius:999px;background:var(--color-muted);overflow:hidden;margin-top:0.5rem}
+.centre-capacity-fill{height:100%;border-radius:999px;background:var(--color-primary);transition:width .3s}
+.centre-capacity-fill.high{background:var(--color-destructive)}
+.centre-capacity-fill.medium{background:var(--color-yellow-bar)}
+
+/* ─── TABLE ACTIONS ─── */
+.table-actions{display:flex;gap:0.35rem;flex-wrap:wrap}
+.table-actions .btn{padding:0.3rem 0.6rem;font-size:0.72rem;border-radius:var(--radius-sm)}
+
+/* ─── DEMO BADGE ─── */
+.demo-badge{position:fixed;bottom:1rem;right:1rem;z-index:200;background:var(--color-accent);color:var(--color-on-accent);padding:0.4rem 0.85rem;border-radius:var(--radius-sm);font-size:0.72rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;box-shadow:var(--shadow-lg)}
+
+/* ─── DEMO PANEL ─── */
+.demo-panel{position:fixed;bottom:3.5rem;right:1rem;z-index:199;width:320px;max-height:70vh;overflow-y:auto;background:var(--color-card);border:1.5px solid var(--color-border);border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);padding:1rem;display:none}
+.demo-panel.open{display:block}
+.demo-panel h4{font-size:0.85rem;margin-bottom:0.75rem}
+.demo-panel .btn{width:100%;margin-bottom:0.4rem;font-size:0.78rem;padding:0.5rem}
+
+/* ─── MODAL ─── */
+.modal-overlay{position:fixed;inset:0;background:rgba(15,23,42,0.5);z-index:150;display:flex;align-items:center;justify-content:center;padding:1rem;backdrop-filter:blur(4px)}
+.modal-content{background:var(--color-card);border-radius:var(--radius-xl);max-width:520px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-lg);border:1px solid var(--color-border)}
+.modal-header{padding:1.25rem 1.5rem;border-bottom:1px solid var(--color-border);display:flex;align-items:center;justify-content:space-between}
+.modal-header h3{font-size:1.1rem}
+.modal-body{padding:1.5rem}
+.modal-footer{padding:1rem 1.5rem;border-top:1px solid var(--color-border);display:flex;justify-content:flex-end;gap:0.5rem}
+
+/* ─── TABS ─── */
+.tabs{display:flex;gap:0.25rem;border-bottom:1.5px solid var(--color-border);overflow-x:auto}
+.tab{padding:0.6rem 1rem;font-size:0.82rem;font-weight:600;color:var(--color-muted-fg);background:transparent;border-bottom:2.5px solid transparent;white-space:nowrap;cursor:pointer}
+.tab:hover{color:var(--color-fg)}
+.tab.active{color:var(--color-primary);border-bottom-color:var(--color-primary)}
+
+/* ─── SCROLLBAR ─── */
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(20,83,45,0.2);border-radius:999px}
+::-webkit-scrollbar-thumb:hover{background:rgba(20,83,45,0.35)}
+
+/* ─── ALERT ─── */
+.alert{padding:0.85rem 1rem;border-radius:var(--radius-md);font-size:0.85rem;display:flex;align-items:flex-start;gap:0.6rem;margin-bottom:1rem}
+.alert-info{background:var(--color-info-bg);color:var(--color-info-fg);border:1px solid var(--color-border-info)}
+.alert-success{background:var(--color-success-bg);color:var(--color-success-fg);border:1px solid var(--color-border-success)}
+.alert-warning{background:var(--color-warning-bg);color:var(--color-warning-fg);border:1px solid var(--color-border-warning)}
+.alert-error{background:var(--color-error-bg);color:var(--color-error-fg);border:1px solid var(--color-border-error)}
+
+/* ─── RESPONSIVE ─── */
+@media(max-width:560px){
+  .queue-token{font-size:2.5rem}
+  .queue-stats{grid-template-columns:1fr}
+  .stat-grid{grid-template-columns:repeat(2,1fr)}
+  .centre-grid{grid-template-columns:1fr}
+  .container{padding:0 0.75rem}
+  .page-header h1{font-size:1.2rem}
+  .btn-lg{padding:0.75rem 1.25rem;font-size:0.9rem}
+}
+
+/* ─── ANIMATIONS ─── */
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.animate-in{animation:fadeIn .35s ease-out}
+@media(prefers-reduced-motion:reduce){*{animation:none !important;transition:none !important}}
+
+/* ─── HERO SECTIONS ─── */
+.hero-section{padding:4rem 0;text-align:center;background:linear-gradient(180deg,var(--color-bg) 0%,rgba(217,251,228,0.6) 100%)}
+.hero-section h1{font-size:2.4rem;margin-bottom:1rem;max-width:800px;margin-left:auto;margin-right:auto}
+.hero-section p{font-size:1rem;color:var(--color-muted-fg);max-width:560px;margin:0 auto 1.5rem}
+@media(max-width:560px){.hero-section h1{font-size:1.6rem}.hero-section{padding:2.5rem 0}}
+
+.features-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1.5rem;margin-top:2rem}
+.feature-card{background:var(--color-card);border-radius:var(--radius-lg);padding:1.5rem;border:1px solid var(--color-border);box-shadow:var(--shadow-sm);transition:transform .2s,box-shadow .2s}
+.feature-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-md)}
+.feature-icon{width:48px;height:48px;border-radius:var(--radius-md);background:var(--color-primary-8);display:flex;align-items:center;justify-content:center;margin-bottom:1rem}
+.feature-icon svg{width:24px;height:24px;stroke:var(--color-primary)}
+.feature-card h3{font-size:0.95rem;margin-bottom:0.4rem}
+.feature-card p{font-size:0.82rem;color:var(--color-muted-fg);line-height:1.5}
+
+.pricing-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1.5rem;margin-top:2rem}
+.pricing-card{background:var(--color-card);border-radius:var(--radius-lg);padding:2rem;border:1.5px solid var(--color-border);box-shadow:var(--shadow-sm);display:flex;flex-direction:column}
+.pricing-card.popular{border-color:var(--color-primary);box-shadow:var(--shadow-md)}
+.pricing-card .price{font-family:var(--font-heading);font-size:2rem;font-weight:900;color:var(--color-fg);margin:0.75rem 0}
+.pricing-card ul{list-style:none;margin:1rem 0;flex:1}
+.pricing-card li{padding:0.4rem 0;font-size:0.85rem;display:flex;align-items:center;gap:0.5rem}
+.pricing-card li svg{width:16px;height:16px;stroke:var(--color-primary);flex-shrink:0}
+
+.testimonial-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.5rem;margin-top:2rem}
+.testimonial-card{background:var(--color-card);border-radius:var(--radius-lg);padding:1.5rem;border:1px solid var(--color-border);box-shadow:var(--shadow-sm)}
+.testimonial-text{font-size:0.9rem;font-style:italic;color:var(--color-fg);margin-bottom:1rem;line-height:1.6}
+.testimonial-author{font-size:0.8rem;font-weight:600}
+.testimonial-role{font-size:0.75rem;color:var(--color-muted-fg)}
+
+.faq-item{background:var(--color-card);border-radius:var(--radius-lg);border:1px solid var(--color-border);margin-bottom:0.75rem;overflow:hidden}
+.faq-q{padding:1rem 1.25rem;font-weight:600;font-size:0.9rem;cursor:pointer;display:flex;align-items:center;justify-content:space-between}
+.faq-q:hover{background:rgba(187,247,208,0.2)}
+.faq-a{padding:0 1.25rem 1rem;font-size:0.85rem;color:var(--color-muted-fg);line-height:1.6;display:none}
+.faq-item.open .faq-a{display:block}
+.faq-item.open .faq-q svg{transform:rotate(180deg)}
+.faq-q svg{transition:transform .2s;width:18px;height:18px;stroke:var(--color-muted-fg)}
+
+.cta-section{padding:3rem 0;text-align:center;background:linear-gradient(180deg,rgba(217,251,228,0.4) 0%,var(--color-bg) 100%);border-top:1px solid var(--color-border);border-bottom:1px solid var(--color-border)}
+.cta-section h2{font-size:1.6rem;margin-bottom:0.75rem}
+.cta-section p{color:var(--color-muted-fg);margin-bottom:1.5rem}
+
+footer{padding:2rem 0;text-align:center;font-size:0.8rem;color:var(--color-muted-fg);border-top:1px solid var(--color-border)}
+
+/* ─── SCANNER SIMULATOR ─── */
+.scanner-sim{border:3px dashed var(--color-border);border-radius:var(--radius-lg);padding:2rem;text-align:center;background:rgba(187,247,208,0.15)}
+.scanner-sim input{text-align:center;font-size:1.2rem;letter-spacing:0.1em;text-transform:uppercase}
+
+/* ─── LOADING ─── */
+.loading{display:flex;align-items:center;justify-content:center;gap:0.5rem;padding:2rem;color:var(--color-muted-fg);font-size:0.85rem}
+.spinner{width:20px;height:20px;border:2.5px solid var(--color-border);border-top-color:var(--color-primary);border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ─── SCROLL TO TOP ─── */
+.scroll-top{position:fixed;bottom:1rem;left:1rem;z-index:100;width:40px;height:40px;border-radius:50%;background:var(--color-primary);color:var(--color-on-primary);display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow-md);opacity:0;pointer-events:none;transition:opacity .2s}
+.scroll-top.visible{opacity:1;pointer-events:auto}
+</style>
+</head>
+<body>
+
+<!-- ─── LANGUAGE SELECTOR SCREEN ─── -->
+<div id="screen-lang" class="page-screen">
+  <div class="hero-section" style="min-height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;padding:2rem">
+    <div class="container-narrow text-center">
+      <div style="width:64px;height:64px;border-radius:var(--radius-lg);background:var(--color-primary);display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2Z"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+      </div>
+      <h1 style="font-size:1.6rem;margin-bottom:0.5rem">Fasal-Slot</h1>
+      <p style="color:var(--color-muted-fg);margin-bottom:2rem;font-size:0.9rem">Farmer Procurement Slot Booking &amp; Real-Time Queue Management</p>
+      <div class="card" style="text-align:left">
+        <div class="card-header"><h3 style="font-size:0.95rem">Select Your Language / भाषा चुनें</h3></div>
+        <div class="card-body">
+          <div class="form-group">
+            <label>Search Language</label>
+            <div class="search-dropdown" id="lang-dropdown">
+              <input type="text" id="lang-search" placeholder="Type to search languages..." autocomplete="off" readonly style="cursor:pointer">
+              <div class="dropdown-list" id="lang-list"></div>
+            </div>
+          </div>
+          <div id="lang-selected" style="margin-top:1rem;font-size:0.85rem;display:none">
+            <span class="badge badge-green" id="lang-badge"></span>
+          </div>
+        </div>
+        <div class="card-footer" style="display:flex;justify-content:flex-end">
+          <button class="btn btn-primary" id="btn-confirm-lang" disabled>Continue</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── ROLE SELECTOR SCREEN ─── -->
+<div id="screen-role" class="page-screen hidden">
+  <div class="hero-section" style="min-height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;padding:2rem">
+    <div class="container-narrow text-center">
+      <h1 style="font-size:1.4rem;margin-bottom:0.5rem" data-t="choose_role">How do you want to continue?</h1>
+      <p style="color:var(--color-muted-fg);margin-bottom:2rem;font-size:0.85rem" data-t="choose_role_sub">Select your role to access the appropriate dashboard</p>
+      <div style="display:grid;gap:1rem">
+        <button class="card" style="text-align:left;padding:1.5rem;cursor:pointer;border:2px solid transparent;transition:border-color .2s" onmouseenter="this.style.borderColor='var(--color-primary)'" onmouseleave="this.style.borderColor='transparent'" onclick="selectRole('farmer')">
+          <div style="display:flex;align-items:center;gap:1rem">
+            <div style="width:56px;height:56px;border-radius:var(--radius-lg);background:var(--color-primary-8);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </div>
+            <div>
+              <h3 style="font-size:1rem;margin-bottom:0.25rem" data-t="role_farmer">Farmer</h3>
+              <p style="font-size:0.8rem;color:var(--color-muted-fg)" data-t="role_farmer_desc">Book procurement slots, track your queue, procurement &amp; payments</p>
+            </div>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-muted-fg)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-left:auto;flex-shrink:0"><polyline points="9 18 15 12 9 6"/></svg>
+          </div>
+        </button>
+        <button class="card" style="text-align:left;padding:1.5rem;cursor:pointer;border:2px solid transparent;transition:border-color .2s" onmouseenter="this.style.borderColor='var(--color-primary)'" onmouseleave="this.style.borderColor='transparent'" onclick="selectRole('officer')">
+          <div style="display:flex;align-items:center;gap:1rem">
+            <div style="width:56px;height:56px;border-radius:var(--radius-lg);background:var(--color-primary-8);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            </div>
+            <div>
+              <h3 style="font-size:1rem;margin-bottom:0.25rem" data-t="role_officer">Procurement Officer</h3>
+              <p style="font-size:0.8rem;color:var(--color-muted-fg)" data-t="role_officer_desc">Manage farmers, queues, procurement &amp; centre operations</p>
+            </div>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-muted-fg)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-left:auto;flex-shrink:0"><polyline points="9 18 15 12 9 6"/></svg>
+          </div>
+        </button>
+        <div style="text-align:center;margin-top:0.5rem">
+          <button class="btn btn-ghost btn-sm" onclick="showAdminLogin()" data-t="admin_login">Admin Login</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── FARMER REGISTRATION ─── -->
+<div id="screen-farmer-register" class="page-screen hidden">
+  <div class="navbar" id="navbar-register">
+    <div class="navbar-inner">
+      <div class="navbar-brand">
+        <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Fasal-Slot
+      </div>
+      <div class="nav-actions">
+        <button class="btn btn-ghost btn-sm" onclick="backToRole()" data-t="back">Back</button>
+      </div>
+    </div>
+  </div>
+  <div class="container-narrow" style="padding-top:2rem;padding-bottom:3rem">
+    <div class="page-header">
+      <h1 data-t="farmer_register">Farmer Registration</h1>
+      <p data-t="register_desc">Create your account to book procurement slots</p>
+    </div>
+    <div class="card">
+      <div class="card-body">
+        <form id="form-farmer-register" onsubmit="handleFarmerRegister(event)">
+          <div class="form-row">
+            <div class="form-group">
+              <label data-t="username">Username *</label>
+              <input type="text" id="reg-username" required placeholder="Choose a username">
+            </div>
+            <div class="form-group">
+              <label data-t="full_name">Full Name *</label>
+              <input type="text" id="reg-name" required placeholder="Your full name">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label data-t="password">Password *</label>
+              <input type="password" id="reg-password" required minlength="6" placeholder="Min 6 characters">
+            </div>
+            <div class="form-group">
+              <label data-t="confirm_password">Confirm Password *</label>
+              <input type="password" id="reg-confirm" required placeholder="Re-enter password">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label data-t="mobile">Mobile Number *</label>
+              <input type="tel" id="reg-mobile" required pattern="[0-9]{10}" placeholder="10 digit mobile number">
+            </div>
+            <div class="form-group">
+              <label data-t="aadhaar">Aadhaar Number *</label>
+              <input type="text" id="reg-aadhaar" required pattern="[0-9]{12}" maxlength="12" placeholder="12 digit Aadhaar">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label data-t="state">State *</label>
+              <select id="reg-state" required onchange="populateDistricts()">
+                <option value="" data-t="select_state">Select State</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label data-t="district">District *</label>
+              <select id="reg-district" required>
+                <option value="" data-t="select_district">Select District</option>
+              </select>
+            </div>
+          </div>
+          <div id="reg-error" class="form-error hidden"></div>
+          <button type="submit" class="btn btn-primary w-full" style="margin-top:0.5rem" data-t="register">Register</button>
+        </form>
+        <div class="text-center mt-2" style="font-size:0.85rem">
+          <span data-t="already_account">Already have an account?</span>
+          <a href="#" onclick="showFarmerLogin()" data-t="login_here">Login here</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── FARMER LOGIN ─── -->
+<div id="screen-farmer-login" class="page-screen hidden">
+  <div class="navbar">
+    <div class="navbar-inner">
+      <div class="navbar-brand">
+        <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Fasal-Slot
+      </div>
+      <div class="nav-actions">
+        <button class="btn btn-ghost btn-sm" onclick="backToRole()" data-t="back">Back</button>
+      </div>
+    </div>
+  </div>
+  <div class="container-narrow" style="padding-top:2rem;padding-bottom:3rem">
+    <div class="page-header">
+      <h1 data-t="farmer_login">Farmer Login</h1>
+      <p data-t="login_desc">Enter your credentials to access your dashboard</p>
+    </div>
+    <div class="card">
+      <div class="card-body">
+        <form id="form-farmer-login" onsubmit="handleFarmerLogin(event)">
+          <div class="form-group">
+            <label data-t="username">Username</label>
+            <input type="text" id="login-username" required placeholder="Enter username">
+          </div>
+          <div class="form-group">
+            <label data-t="password">Password</label>
+            <input type="password" id="login-password" required placeholder="Enter password">
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
+            <label style="display:flex;align-items:center;gap:0.4rem;font-size:0.8rem;text-transform:none;letter-spacing:0;font-weight:400;cursor:pointer;color:var(--color-fg)">
+              <input type="checkbox" id="login-remember" style="width:auto">
+              <span data-t="remember_me">Remember Me</span>
+            </label>
+            <a href="#" style="font-size:0.8rem" data-t="forgot_password">Forgot Password?</a>
+          </div>
+          <div id="login-error" class="form-error hidden"></div>
+          <button type="submit" class="btn btn-primary w-full" data-t="login">Login</button>
+        </form>
+        <div class="text-center mt-2" style="font-size:0.85rem">
+          <span data-t="no_account">Don't have an account?</span>
+          <a href="#" onclick="showFarmerRegister()" data-t="register_here">Register here</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── ADMIN LOGIN ─── -->
+<div id="screen-admin-login" class="page-screen hidden">
+  <div class="navbar">
+    <div class="navbar-inner">
+      <div class="navbar-brand">
+        <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Fasal-Slot
+      </div>
+      <div class="nav-actions">
+        <button class="btn btn-ghost btn-sm" onclick="backToRole()" data-t="back">Back</button>
+      </div>
+    </div>
+  </div>
+  <div class="container-narrow" style="padding-top:2rem;padding-bottom:3rem">
+    <div class="page-header">
+      <h1 data-t="admin_login_title">Administrator Login</h1>
+      <p data-t="admin_login_desc">Secure access for system administrators</p>
+    </div>
+    <div class="card">
+      <div class="card-body">
+        <form id="form-admin-login" onsubmit="handleAdminLogin(event)">
+          <div class="form-group">
+            <label data-t="admin_id">Admin ID</label>
+            <input type="text" id="admin-id" required placeholder="Enter admin ID">
+          </div>
+          <div class="form-group">
+            <label data-t="password">Password</label>
+            <input type="password" id="admin-password" required placeholder="Enter password">
+          </div>
+          <div id="admin-error" class="form-error hidden"></div>
+          <button type="submit" class="btn btn-primary w-full" data-t="login">Login</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── OFFICER LOGIN ─── -->
+<div id="screen-officer-login" class="page-screen hidden">
+  <div class="navbar">
+    <div class="navbar-inner">
+      <div class="navbar-brand">
+        <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Fasal-Slot
+      </div>
+      <div class="nav-actions">
+        <button class="btn btn-ghost btn-sm" onclick="backToRole()" data-t="back">Back</button>
+      </div>
+    </div>
+  </div>
+  <div class="container-narrow" style="padding-top:2rem;padding-bottom:3rem">
+    <div class="page-header">
+      <h1 data-t="officer_login">Officer Login</h1>
+      <p data-t="officer_login_desc">Access your procurement centre dashboard</p>
+    </div>
+    <div class="card">
+      <div class="card-body">
+        <form id="form-officer-login" onsubmit="handleOfficerLogin(event)">
+          <div class="form-group">
+            <label data-t="officer_id">Officer ID</label>
+            <input type="text" id="officer-id" required placeholder="Enter officer ID">
+          </div>
+          <div class="form-group">
+            <label data-t="password">Password</label>
+            <input type="password" id="officer-password" required placeholder="Enter password">
+          </div>
+          <div class="form-group">
+            <label data-t="centre">Procurement Centre</label>
+            <select id="officer-centre" required></select>
+          </div>
+          <div id="officer-error" class="form-error hidden"></div>
+          <button type="submit" class="btn btn-primary w-full" data-t="login">Login</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── MAIN APP SHELL (ALL DASHBOARDS) ─── -->
+<div id="app-shell" class="hidden">
+  <nav class="navbar" id="app-navbar">
+    <div class="navbar-inner">
+      <div class="navbar-brand" onclick="goHome()" style="cursor:pointer">
+        <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Fasal-Slot
+      </div>
+      <button class="mobile-menu-btn" id="mobile-menu-btn" onclick="toggleMobileNav()">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <div class="navbar-nav" id="navbar-nav">
+        <!-- Nav items injected by JS -->
+      </div>
+      <div class="nav-actions">
+        <div class="lang-switch">
+          <select id="lang-switcher" onchange="changeLanguage(this.value)"></select>
+        </div>
+        <button class="notif-btn" id="notif-btn" onclick="toggleNotifications()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+          <span class="notif-count hidden" id="notif-count">0</span>
+        </button>
+        <button class="btn btn-ghost btn-sm" id="logout-btn" onclick="logout()" data-t="logout">Logout</button>
+      </div>
+    </div>
+  </nav>
+
+  <div id="notif-panel" class="hidden" style="position:fixed;top:56px;right:1rem;z-index:99;width:360px;max-height:70vh;overflow-y:auto;background:var(--color-card);border:1.5px solid var(--color-border);border-radius:var(--radius-lg);box-shadow:var(--shadow-lg)">
+    <div class="card-header"><h4 style="font-size:0.9rem" data-t="notifications">Notifications</h4><button class="btn btn-ghost btn-sm" onclick="markAllRead()" data-t="mark_all_read">Mark all read</button></div>
+    <div class="card-body" style="padding:0.75rem"><div class="notif-list" id="notif-list"></div></div>
+  </div>
+
+  <main id="app-main" style="min-height:calc(100vh - 60px)">
+    <!-- Dynamic content -->
+  </main>
+</div>
+
+<!-- ─── DEMO BADGE & PANEL ─── -->
+<div class="demo-badge" id="demo-badge" style="display:none">Demo Mode</div>
+<button class="demo-badge" id="demo-panel-toggle" style="display:none;bottom:3.5rem;right:1rem;background:var(--color-primary);cursor:pointer;border:none" onclick="toggleDemoPanel()">Demo Controls</button>
+<div class="demo-panel" id="demo-panel">
+  <h4 data-t="demo_controls">Demo Controls</h4>
+  <button class="btn btn-primary" onclick="demoCallNext()" data-t="demo_call_next">Call Next Farmer</button>
+  <button class="btn btn-secondary" onclick="demoEntryScan()" data-t="demo_entry_scan">Simulate Entry QR Scan</button>
+  <button class="btn btn-secondary" onclick="demoOfficeScan()" data-t="demo_office_scan">Simulate Office QR Scan</button>
+  <button class="btn btn-secondary" onclick="demoCompleteScan()" data-t="demo_complete_scan">Simulate Complete QR Scan</button>
+  <button class="btn btn-accent" onclick="demoStartPayment()" data-t="demo_start_payment">Start Payment Processing</button>
+  <button class="btn btn-accent" onclick="demoPaymentSuccess()" data-t="demo_payment_success">Simulate Payment Success</button>
+  <button class="btn btn-danger" onclick="demoPaymentFail()" data-t="demo_payment_fail">Simulate Payment Failure</button>
+  <button class="btn btn-outline" onclick="demoNotifyQueue()" data-t="demo_notify_queue">Send Queue Update</button>
+  <button class="btn btn-outline" onclick="demoNotifyServing()" data-t="demo_notify_serving">Send Now Serving</button>
+  <button class="btn btn-outline" onclick="demoNotifyCompleted()" data-t="demo_notify_completed">Send Completed</button>
+</div>
+
+<!-- ─── SCROLL TO TOP ─── -->
+<button class="scroll-top" id="scroll-top" onclick="window.scrollTo({top:0,behavior:'smooth'})">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
+</button>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════════════
+   Fasal-Slot — Farmer Procurement Slot Booking & Queue Management
+   Single-file application with mock data, localStorage state, and demo mode.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+// ─── TRANSLATIONS ───
+const TRANSLATIONS = {
+  en: {
+    choose_role:"How do you want to continue?",
+    choose_role_sub:"Select your role to access the appropriate dashboard",
+    role_farmer:"Farmer",
+    role_farmer_desc:"Book procurement slots, track your queue, procurement & payments",
+    role_officer:"Procurement Officer",
+    role_officer_desc:"Manage farmers, queues, procurement & centre operations",
+    admin_login:"Admin Login",
+    back:"Back",
+    farmer_register:"Farmer Registration",
+    register_desc:"Create your account to book procurement slots",
+    username:"Username",
+    full_name:"Full Name",
+    password:"Password",
+    confirm_password:"Confirm Password",
+    mobile:"Mobile Number",
+    aadhaar:"Aadhaar Number",
+    state:"State",
+    district:"District",
+    select_state:"Select State",
+    select_district:"Select District",
+    register:"Register",
+    already_account:"Already have an account?",
+    login_here:"Login here",
+    farmer_login:"Farmer Login",
+    login_desc:"Enter your credentials to access your dashboard",
+    login:"Login",
+    remember_me:"Remember Me",
+    forgot_password:"Forgot Password?",
+    no_account:"Don't have an account?",
+    register_here:"Register here",
+    admin_login_title:"Administrator Login",
+    admin_login_desc:"Secure access for system administrators",
+    admin_id:"Admin ID",
+    officer_login:"Officer Login",
+    officer_login_desc:"Access your procurement centre dashboard",
+    officer_id:"Officer ID",
+    centre:"Procurement Centre",
+    logout:"Logout",
+    dashboard:"Dashboard",
+    book_slot:"Book Slot",
+    my_token:"My Token",
+    live_queue:"Live Queue",
+    notifications:"Notifications",
+    my_procurement:"My Procurement",
+    payments:"Payments",
+    profile:"Profile",
+    mark_all_read:"Mark all read",
+    today_overview:"Today's Overview",
+    total_bookings:"Total Bookings",
+    farmers_arrived:"Farmers Arrived",
+    procurements_completed:"Procurements Completed",
+    currently_waiting:"Currently Waiting",
+    going_on:"Going On",
+    no_shows:"No Shows",
+    todays_bookings:"Today's Bookings",
+    completed:"Completed",
+    qr_scanner:"QR Scanner",
+    centres:"Centres",
+    farmers:"Farmers",
+    bookings:"Bookings",
+    procurement:"Procurement",
+    analytics:"Analytics",
+    reports:"Reports",
+    search_crop:"Search and select crop",
+    add_crop:"Add Another Crop",
+    quantity:"Quantity",
+    unit:"Unit",
+    proceed:"Proceed",
+    allow_location:"Allow Location",
+    enter_manual:"Enter Location Manually",
+    location_desc:"Location is used only to find nearby procurement centres and calculate distance.",
+    nearby_centres:"Nearby Procurement Centres",
+    distance:"Distance",
+    available_slots:"Available Slots",
+    current_queue:"Current Queue",
+    estimated_wait:"Est. Wait",
+    crop_availability:"Crop Availability",
+    capacity_status:"Capacity",
+    book:"Book",
+    insufficient_capacity:"Insufficient capacity for selected quantity. Available: {avail}. Required: {req}.",
+    select_slot:"Select Time Slot",
+    time:"Time",
+    total_capacity:"Total Capacity",
+    booked:"Booked",
+    status:"Status",
+    action:"Action",
+    not_available:"NOT AVAILABLE",
+    booking_confirmed:"Booking Confirmed",
+    view_live_queue:"View Live Queue",
+    show_qr:"Show QR",
+    download_qr:"Download QR",
+    token:"Token",
+    booking_id:"Booking ID",
+    crop:"Crop",
+    expected_quantity:"Expected Quantity",
+    your_token:"YOUR TOKEN",
+    now_serving:"NOW SERVING",
+    farmers_ahead:"FARMERS AHEAD",
+    estimated_waiting:"EST. WAITING",
+    estimated_turn:"EST. TURN",
+    current_status:"CURRENT STATUS",
+    high_confidence:"High Confidence",
+    medium_confidence:"Medium Confidence",
+    low_confidence:"Low Confidence",
+    payment_status:"Payment Status",
+    total_value:"Total Value",
+    amount_paid:"Amount Paid",
+    transaction_ref:"Transaction Ref",
+    payment_history:"Payment History",
+    date:"Date",
+    amount:"Amount",
+    paid:"Paid",
+    processing:"Processing",
+    failed:"Failed",
+    simulate_payment:"Simulate Payment",
+    simulate_success:"Simulate Success",
+    simulate_failure:"Simulate Failure",
+    demo_controls:"Demo Controls",
+    demo_call_next:"Call Next Farmer",
+    demo_entry_scan:"Simulate Entry QR Scan",
+    demo_office_scan:"Simulate Office QR Scan",
+    demo_complete_scan:"Simulate Complete QR Scan",
+    demo_start_payment:"Start Payment Processing",
+    demo_payment_success:"Simulate Payment Success",
+    demo_payment_fail:"Simulate Payment Failure",
+    demo_notify_queue:"Send Queue Update",
+    demo_notify_serving:"Send Now Serving",
+    demo_notify_completed:"Send Completed",
+    call_next:"Call Next",
+    start_procurement:"Start Procurement",
+    complete_procurement:"Complete Procurement",
+    skip:"Skip",
+    mark_arrived:"Mark Arrived",
+    mark_no_show:"Mark No Show",
+    entry_verified:"ENTRY VERIFIED",
+    procurement_started:"PROCUREMENT STARTED",
+    procurement_completed:"PROCUREMENT COMPLETED",
+    scan_invalid_sequence:"Invalid scan sequence",
+    farmer_name:"Farmer Name",
+    quality_grade:"Quality Grade",
+    price_per_unit:"Price per Unit",
+    total_amount:"Total Amount",
+    remarks:"Remarks",
+    submit:"Submit",
+    save:"Save",
+    cancel:"Cancel",
+    edit:"Edit",
+    welcome:"Welcome",
+    quick_actions:"Quick Actions",
+    active_bookings:"Active Bookings",
+    recent_procurement:"Recent Procurement",
+    view_all:"View All",
+    no_data:"No data available",
+    whatsapp_demo:"WhatsApp Demo Mode",
+    whatsapp_demo_msg:"This is the message that would be sent via WhatsApp:",
+    search:"Search",
+    filter:"Filter",
+    all:"All",
+    demo_mode:"Demo Mode",
+    select_language:"Select Your Language",
+    search_language:"Search language..."
+  },
+  hi: {
+    choose_role:"आप कैसे जारी रखना चाहते हैं?",
+    choose_role_sub:"उचित डैशबोर्ड तक पहुंचने के लिए अपनी भूमिका चुनें",
+    role_farmer:"किसान",
+    role_farmer_desc:"खरीद स्लॉट बुक करें, अपनी कतार, खरीद और भुगतान ट्रैक करें",
+    role_officer:"खरीद अधिकारी",
+    role_officer_desc:"किसानों, कतार, खरीद और केंद्र संचालन का प्रबंधन करें",
+    admin_login:"व्यवस्थापक लॉगिन",
+    farmer_register:"किसान पंजीकरण",
+    register_desc:"खरीद स्लॉट बुक करने के लिए अपना खाता बनाएं",
+    username:"उपयोगकर्ता नाम",
+    full_name:"पूरा नाम",
+    password:"पासवर्ड",
+    confirm_password:"पासवर्ड की पुष्टि करें",
+    mobile:"मोबाइल नंबर",
+    aadhaar:"आधार नंबर",
+    state:"राज्य",
+    district:"जिला",
+    select_state:"राज्य चुनें",
+    select_district:"जिला चुनें",
+    register:"पंजीकरण करें",
+    already_account:"पहले से खाता है?",
+    login_here:"यहां लॉगिन करें",
+    farmer_login:"किसान लॉगिन",
+    login_desc:"अपने डैशबोर्ड तक पहुंचने के लिए अपनी साख दर्ज करें",
+    login:"लॉगिन",
+    remember_me:"मुझे याद रखें",
+    forgot_password:"पासवर्ड भूल गए?",
+    no_account:"खाता नहीं है?",
+    register_here:"यहां पंजीकरण करें",
+    admin_login_title:"व्यवस्थापक लॉगिन",
+    admin_login_desc:"सिस्टम व्यवस्थापकों के लिए सुरक्षित पहुंच",
+    admin_id:"व्यवस्थापक आईडी",
+    officer_login:"अधिकारी लॉगिन",
+    officer_login_desc:"अपने खरीद केंद्र डैशबोर्ड तक पहुंचें",
+    officer_id:"अधिकारी आईडी",
+    centre:"खरीद केंद्र",
+    logout:"लॉगआउट",
+    dashboard:"डैशबोर्ड",
+    book_slot:"स्लॉट बुक करें",
+    my_token:"मेरा टोकन",
+    live_queue:"लाइव कतार",
+    notifications:"सूचनाएं",
+    my_procurement:"मेरी खरीद",
+    payments:"भुगतान",
+    profile:"प्रोफाइल",
+    mark_all_read:"सभी पढ़े हुए चिह्नित करें",
+    today_overview:"आज का अवलोकन",
+    total_bookings:"कुल बुकिंग",
+    farmers_arrived:"पहुंचे किसान",
+    procurements_completed:"पूरी हुई खरीद",
+    currently_waiting:"वर्तमान में प्रतीक्षा",
+    going_on:"चालू",
+    no_shows:"अनुपस्थित",
+    todays_bookings:"आज की बुकिंग",
+    completed:"पूर्ण",
+    qr_scanner:"क्यूआर स्कैनर",
+    centres:"केंद्र",
+    farmers:"किसान",
+    bookings:"बुकिंग",
+    procurement:"खरीद",
+    analytics:"विश्लेषण",
+    reports:"रिपोर्ट",
+    search_crop:"फसल खोजें और चुनें",
+    add_crop:"एक और फसल जोड़ें",
+    quantity:"मात्रा",
+    unit:"इकाई",
+    proceed:"आगे बढ़ें",
+    allow_location:"स्थति अनुमति दें",
+    enter_manual:"स्थति मैन्युअल दर्ज करें",
+    location_desc:"स्थति का उपयोग केवल नजदीकी खरीद केंद्र खोजने और दूरी की गणना के लिए किया जाता है।",
+    nearby_centres:"नजदीकी खरीद केंद्र",
+    distance:"दूरी",
+    available_slots:"उपलब्ध स्लॉट",
+    current_queue:"वर्तमान कतार",
+    estimated_wait:"अनुमानित प्रतीक्षा",
+    crop_availability:"फसल उपलब्धता",
+    capacity_status:"क्षमता स्थिति",
+    book:"बुक करें",
+    insufficient_capacity:"चयनित मात्रा के लिए अपर्याप्त क्षमता। उपलब्ध: {avail}। आवश्यक: {req}।",
+    select_slot:"समय स्लॉट चुनें",
+    time:"समय",
+    total_capacity:"कुल क्षमता",
+    booked:"बुक किया",
+    status:"स्थिति",
+    action:"कार्रवाई",
+    not_available:"उपलब्ध नहीं",
+    booking_confirmed:"बुकिंग पुष्टि हुई",
+    view_live_queue:"लाइव कतार देखें",
+    show_qr:"क्यूआर दिखाएं",
+    download_qr:"क्यूआर डाउनलोड करें",
+    token:"टोकन",
+    booking_id:"बुकिंग आईडी",
+    crop:"फसल",
+    expected_quantity:"अपेक्षित मात्रा",
+    your_token:"आपका टोकन",
+    now_serving:"अभी सेवा में",
+    farmers_ahead:"आगे किसान",
+    estimated_waiting:"अनुमानित प्रतीक्षा",
+    estimated_turn:"अनुमानित बारी",
+    current_status:"वर्तमान स्थिति",
+    high_confidence:"उच्च विश्वास",
+    medium_confidence:"मध्यम विश्वास",
+    low_confidence:"कम विश्वास",
+    payment_status:"भुगतान स्थिति",
+    total_value:"कुल मूल्य",
+    amount_paid:"भुगतान राशि",
+    transaction_ref:"लेनदेन संदर्भ",
+    payment_history:"भुगतान इतिहास",
+    date:"तारीख",
+    amount:"राशि",
+    paid:"भुगतान किया",
+    processing:"प्रक्रिया में",
+    failed:"विफल",
+    simulate_payment:"भुगतान अनुकरण करें",
+    simulate_success:"सफलता अनुकरण करें",
+    simulate_failure:"विफलता अनुकरण करें",
+    call_next:"अगला बुलाएं",
+    start_procurement:"खरीद शुरू करें",
+    complete_procurement:"खरीद पूर्ण करें",
+    skip:"छोड़ें",
+    mark_arrived:"पहुंचा चिह्नित करें",
+    mark_no_show:"अनुपस्थित चिह्नित करें",
+    entry_verified:"प्रवेश सत्यापित",
+    procurement_started:"खरीद शुरू हुई",
+    procurement_completed:"खरीद पूर्ण हुई",
+    scan_invalid_sequence:"अमान्य स्कैन क्रम",
+    farmer_name:"किसान का नाम",
+    quality_grade:"गुणवत्ता ग्रेड",
+    price_per_unit:"प्रति इकाई मूल्य",
+    total_amount:"कुल राशि",
+    remarks:"टिप्पणियां",
+    submit:"जमा करें",
+    save:"सहेजें",
+    cancel:"रद्द करें",
+    edit:"संपादित करें",
+    welcome:"स्वागत है",
+    quick_actions:"त्वरित कार्रवाई",
+    active_bookings:"सक्रिय बुकिंग",
+    recent_procurement:"हालिया खरीद",
+    view_all:"सभी देखें",
+    no_data:"कोई डेटा उपलब्ध नहीं",
+    demo_mode:"डेमो मोड",
+    select_language:"अपनी भाषा चुनें",
+    search_language:"भाषा खोजें..."
+  }
+};
+
+// Fallback to English for missing keys
+function t(key, params) {
+  const lang = state.language || 'en';
+  let text = (TRANSLATIONS[lang] && TRANSLATIONS[lang][key]) || TRANSLATIONS.en[key] || key;
+  if (params) {
+    Object.keys(params).forEach(k => { text = text.replace('{'+k+'}', params[k]); });
+  }
+  return text;
+}
+
+// ─── STATE ───
+const state = {
+  language: localStorage.getItem('ks_language') || null,
+  role: null,
+  user: JSON.parse(localStorage.getItem('ks_user') || 'null'),
+  bookings: JSON.parse(localStorage.getItem('ks_bookings') || '[]'),
+  procurements: JSON.parse(localStorage.getItem('ks_procurements') || '[]'),
+  payments: JSON.parse(localStorage.getItem('ks_payments') || '[]'),
+  notifications: JSON.parse(localStorage.getItem('ks_notifications') || '[]'),
+  qrEvents: JSON.parse(localStorage.getItem('ks_qr_events') || '[]'),
+  currentBookingId: null,
+  unreadNotifCount: 0,
+  demoMode: true,
+  officer: null,
+  admin: null,
+  currentPage: 'dashboard'
+};
+
+// ─── MOCK DATA ───
+const CROPS = [
+  "Wheat","Rice","Maize","Barley","Bajra","Jowar","Ragi","Mustard",
+  "Gram","Groundnut","Soybean","Cotton","Sugarcane","Pulses",
+  "Turmeric","Coriander","Cumin","Red Chilli","Onion","Potato",
+  "Tomato","Garlic","Moong","Urad","Masoor","Moth","Lentil"
+];
+
+const UNITS = [
+  {code:'kg',name:'Kilogram (kg)',factor:1},
+  {code:'q',name:'Quintal (Q)',factor:100},
+  {code:'t',name:'Tonne (T)',factor:1000}
+];
+
+const STATES_DISTRICTS = {
+  "Uttar Pradesh":["Lucknow","Kanpur","Agra","Varanasi","Prayagraj","Gorakhpur","Meerut","Bareilly"],
+  "Punjab":["Ludhiana","Amritsar","Jalandhar","Patiala","Bathinda","Firozpur"],
+  "Haryana":["Gurgaon","Faridabad","Hisar","Karnal","Panipat","Rohtak"],
+  "Madhya Pradesh":["Bhopal","Indore","Gwalior","Jabalpur","Ujjain","Sagar"],
+  "Maharashtra":["Mumbai","Pune","Nagpur","Nashik","Aurangabad","Solapur"],
+  "Rajasthan":["Jaipur","Jodhpur","Udaipur","Kota","Bikaner","Ajmer"],
+  "Bihar":["Patna","Gaya","Muzaffarpur","Darbhanga","Bhagalpur"],
+  "West Bengal":["Kolkata","Howrah","Darjeeling","Malda","Burdwan"],
+  "Gujarat":["Ahmedabad","Surat","Vadodara","Rajkot","Gandhinagar"],
+  "Karnataka":["Bengaluru","Mysuru","Hubli","Mangaluru","Belagavi"],
+  "Tamil Nadu":["Chennai","Coimbatore","Madurai","Salem","Tiruchirappalli"],
+  "Telangana":["Hyderabad","Warangal","Nizamabad","Karimnagar"],
+  "Andhra Pradesh":["Visakhapatnam","Vijayawada","Guntur","Tirupati"],
+  "Kerala":["Thiruvananthapuram","Kochi","Kozhikode","Thrissur"],
+  "Odisha":["Bhubaneswar","Cuttack","Rourkela","Berhampur"],
+  "Assam":["Guwahati","Dibrugarh","Jorhat","Silchar"]
+};
+
+function generateCentres() {
+  const centres = [];
+  const centreNames = [
+    "Krishi Mandi","Anaj Mandi","Sahkari Samiti","FCI Centre","State Procurement Centre",
+    "District Mandi","Block Level Centre","Primary Agriculture Centre","Rural Mandi","Urban Collection Centre"
+  ];
+  const cropsList = ["Wheat","Rice","Maize","Bajra","Jowar","Gram","Groundnut","Soybean","Cotton","Sugarcane"];
+  let id = 1;
+  Object.keys(STATES_DISTRICTS).forEach(st => {
+    STATES_DISTRICTS[st].forEach((dist, di) => {
+      const baseLat = 20 + Math.random()*18;
+      const baseLng = 72 + Math.random()*25;
+      for (let i = 0; i < 3; i++) {
+        const accepted = [];
+        const numCrops = 3 + Math.floor(Math.random()*5);
+        for (let c = 0; c < numCrops; c++) accepted.push(cropsList[Math.floor(Math.random()*cropsList.length)]);
+        const cropCapacity = {};
+        accepted.forEach(c => cropCapacity[c] = 50 + Math.floor(Math.random()*450));
+        centres.push({
+          id: 'C'+String(id).padStart(4,'0'),
+          name: `${centreNames[Math.floor(Math.random()*centreNames.length)]} ${dist}`,
+          state: st,
+          district: dist,
+          address: `${dist}, ${st}`,
+          lat: baseLat + (Math.random()-0.5)*0.5,
+          lng: baseLng + (Math.random()-0.5)*0.5,
+          acceptedCrops: [...new Set(accepted)],
+          cropCapacity,
+          dailyCapacity: 80 + Math.floor(Math.random()*120),
+          activeCounters: 1 + Math.floor(Math.random()*4),
+          avgProcessTime: 4 + Math.floor(Math.random()*8)
+        });
+        id++;
+      }
+    });
+  });
+  return centres;
+}
+
+let CENTRES = JSON.parse(localStorage.getItem('ks_centres') || 'null');
+if (!CENTRES) { CENTRES = generateCentres(); localStorage.setItem('ks_centres', JSON.stringify(CENTRES)); }
+
+const OFFICERS = [
+  {id:'OFF001',name:'Rajesh Sharma',password:'officer123',centreIds:['C0001','C0002']},
+  {id:'OFF002',name:'Priya Patel',password:'officer123',centreIds:['C0003','C0004']}
+];
+
+const ADMINS = [{id:'ADMIN001',password:'admin123',name:'System Admin'}];
+
+// ─── LANGUAGE SETUP ───
+const LANGUAGES = [
+  {code:'en',name:'English'},
+  {code:'hi',name:'हिन्दी (Hindi)'},
+  {code:'bn',name:'বাংলা (Bengali)'},
+  {code:'te',name:'తెలుగు (Telugu)'},
+  {code:'mr',name:'मराठी (Marathi)'},
+  {code:'ta',name:'தமிழ் (Tamil)'},
+  {code:'gu',name:'ગુજરાતી (Gujarati)'},
+  {code:'kn',name:'ಕನ್ನಡ (Kannada)'},
+  {code:'ml',name:'മലയാളം (Malayalam)'},
+  {code:'pa',name:'ਪੰਜਾਬੀ (Punjabi)'},
+  {code:'od',name:'ଓଡ଼ିଆ (Odia)'},
+  {code:'as',name:'অসমীয়া (Assamese)'},
+  {code:'ur',name:'اردو (Urdu)'}
+];
+
+function initLanguageScreen() {
+  const list = document.getElementById('lang-list');
+  const search = document.getElementById('lang-search');
+  const badge = document.getElementById('lang-badge');
+  const selectedDiv = document.getElementById('lang-selected');
+  const confirmBtn = document.getElementById('btn-confirm-lang');
+
+  function renderLangs(filter) {
+    list.innerHTML = '';
+    LANGUAGES.filter(l => l.name.toLowerCase().includes(filter.toLowerCase()) || l.code.includes(filter.toLowerCase())).forEach(l => {
+      const div = document.createElement('div');
+      div.className = 'dropdown-item';
+      div.textContent = l.name;
+      div.onclick = () => selectLang(l);
+      list.appendChild(div);
+    });
+  }
+
+  function selectLang(l) {
+    state.language = l.code;
+    search.value = l.name;
+    badge.textContent = l.name;
+    selectedDiv.style.display = 'block';
+    confirmBtn.disabled = false;
+    document.getElementById('lang-dropdown').classList.remove('open');
+  }
+
+  search.addEventListener('focus', () => { renderLangs(search.value); document.getElementById('lang-dropdown').classList.add('open'); });
+  search.addEventListener('input', () => renderLangs(search.value));
+  document.addEventListener('click', e => { if (!document.getElementById('lang-dropdown').contains(e.target)) document.getElementById('lang-dropdown').classList.remove('open'); });
+
+  confirmBtn.onclick = () => {
+    localStorage.setItem('ks_language', state.language);
+    showScreen('screen-role');
+    applyTranslations();
+  };
+
+  renderLangs('');
+}
+
+function applyTranslations() {
+  document.querySelectorAll('[data-t]').forEach(el => {
+    const key = el.getAttribute('data-t');
+    if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+      if (el.placeholder) el.placeholder = t(key);
+    } else {
+      el.textContent = t(key);
+    }
+  });
+  document.querySelectorAll('[data-t-placeholder]').forEach(el => {
+    el.placeholder = t(el.getAttribute('data-t-placeholder'));
+  });
+}
+
+function changeLanguage(code) {
+  state.language = code;
+  localStorage.setItem('ks_language', code);
+  applyTranslations();
+  refreshPage();
+}
+
+function populateLangSwitcher() {
+  const sel = document.getElementById('lang-switcher');
+  if (!sel) return;
+  sel.innerHTML = '';
+  LANGUAGES.forEach(l => {
+    const opt = document.createElement('option');
+    opt.value = l.code;
+    opt.textContent = l.name;
+    if (l.code === state.language) opt.selected = true;
+    sel.appendChild(opt);
+  });
+}
+
+// ─── SCREEN MANAGEMENT ───
+function showScreen(id) {
+  document.querySelectorAll('.page-screen').forEach(s => s.classList.add('hidden'));
+  document.getElementById(id).classList.remove('hidden');
+  if (id === 'app-shell') {
+    document.getElementById('app-shell').classList.remove('hidden');
+  } else {
+    document.getElementById('app-shell').classList.add('hidden');
+  }
+  window.scrollTo(0,0);
+}
+
+function backToRole() {
+  state.role = null;
+  state.user = null;
+  state.officer = null;
+  state.admin = null;
+  showScreen('screen-role');
+}
+
+function selectRole(role) {
+  state.role = role;
+  if (role === 'farmer') showFarmerLogin();
+  else if (role === 'officer') showOfficerLogin();
+}
+
+function showFarmerRegister() { showScreen('screen-farmer-register'); populateStates(); applyTranslations(); }
+function showFarmerLogin() { showScreen('screen-farmer-login'); applyTranslations(); }
+function showOfficerLogin() { showScreen('screen-officer-login'); populateOfficerCentres(); applyTranslations(); }
+function showAdminLogin() { showScreen('screen-admin-login'); applyTranslations(); }
+
+// ─── FORM HELPERS ───
+function populateStates() {
+  const sel = document.getElementById('reg-state');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">'+t('select_state')+'</option>';
+  Object.keys(STATES_DISTRICTS).forEach(st => {
+    const opt = document.createElement('option');
+    opt.value = st;
+    opt.textContent = st;
+    sel.appendChild(opt);
+  });
+}
+
+function populateDistricts() {
+  const st = document.getElementById('reg-state').value;
+  const sel = document.getElementById('reg-district');
+  sel.innerHTML = '<option value="">'+t('select_district')+'</option>';
+  if (st && STATES_DISTRICTS[st]) {
+    STATES_DISTRICTS[st].forEach(d => {
+      const opt = document.createElement('option');
+      opt.value = d;
+      opt.textContent = d;
+      sel.appendChild(opt);
+    });
+  }
+}
+
+function populateOfficerCentres() {
+  const sel = document.getElementById('officer-centre');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">Select Centre</option>';
+  CENTRES.forEach(c => {
+    const opt = document.createElement('option');
+    opt.value = c.id;
+    opt.textContent = c.name + ' — ' + c.district;
+    sel.appendChild(opt);
+  });
+}
+
+function showError(id, msg) {
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.classList.remove('hidden');
+}
+function hideError(id) { document.getElementById(id).classList.add('hidden'); }
+
+function maskAadhaar(aadhaar) {
+  if (!aadhaar || aadhaar.length !== 12) return aadhaar;
+  return 'XXXX-XXXX-' + aadhaar.slice(8);
+}
+
+function maskMobile(mobile) {
+  if (!mobile || mobile.length !== 10) return mobile;
+  return 'XXXXXX' + mobile.slice(6);
+}
+
+// ─── AUTH ───
+function handleFarmerRegister(e) {
+  e.preventDefault();
+  hideError('reg-error');
+  const username = document.getElementById('reg-username').value.trim();
+  const name = document.getElementById('reg-name').value.trim();
+  const password = document.getElementById('reg-password').value;
+  const confirm = document.getElementById('reg-confirm').value;
+  const mobile = document.getElementById('reg-mobile').value.trim();
+  const aadhaar = document.getElementById('reg-aadhaar').value.trim();
+  const st = document.getElementById('reg-state').value;
+  const dist = document.getElementById('reg-district').value;
+
+  if (password !== confirm) { showError('reg-error', 'Passwords do not match'); return; }
+  if (password.length < 6) { showError('reg-error', 'Password must be at least 6 characters'); return; }
+  if (!/^[0-9]{10}$/.test(mobile)) { showError('reg-error', 'Invalid mobile number'); return; }
+  if (!/^[0-9]{12}$/.test(aadhaar)) { showError('reg-error', 'Invalid Aadhaar number'); return; }
+
+  const existing = JSON.parse(localStorage.getItem('ks_farmers') || '[]');
+  if (existing.find(f => f.username === username)) { showError('reg-error', 'Username already exists'); return; }
+
+  const farmer = {id:'F'+Date.now(), username, name, password, mobile, aadhaar, state:st, district:dist, language:state.language, registeredAt: new Date().toISOString()};
+  existing.push(farmer);
+  localStorage.setItem('ks_farmers', JSON.stringify(existing));
+  alert('Registration successful! Please login.');
+  showFarmerLogin();
+}
+
+function handleFarmerLogin(e) {
+  e.preventDefault();
+  hideError('login-error');
+  const username = document.getElementById('login-username').value.trim();
+  const password = document.getElementById('login-password').value;
+  const farmers = JSON.parse(localStorage.getItem('ks_farmers') || '[]');
+  const farmer = farmers.find(f => f.username === username && f.password === password);
+  if (!farmer) { showError('login-error', 'Invalid username or password'); return; }
+  state.user = farmer;
+  state.role = 'farmer';
+  localStorage.setItem('ks_user', JSON.stringify(farmer));
+  initApp();
+}
+
+function handleOfficerLogin(e) {
+  e.preventDefault();
+  hideError('officer-error');
+  const id = document.getElementById('officer-id').value.trim();
+  const password = document.getElementById('officer-password').value;
+  const centreId = document.getElementById('officer-centre').value;
+  const officer = OFFICERS.find(o => o.id === id && o.password === password);
+  if (!officer) { showError('officer-error', 'Invalid credentials'); return; }
+  if (!centreId) { showError('officer-error', 'Please select a centre'); return; }
+  state.officer = {...officer, centreId};
+  state.role = 'officer';
+  initApp();
+}
+
+function handleAdminLogin(e) {
+  e.preventDefault();
+  hideError('admin-error');
+  const id = document.getElementById('admin-id').value.trim();
+  const password = document.getElementById('admin-password').value;
+  const admin = ADMINS.find(a => a.id === id && a.password === password);
+  if (!admin) { showError('admin-error', 'Invalid credentials'); return; }
+  state.admin = admin;
+  state.role = 'admin';
+  initApp();
+}
+
+function logout() {
+  state.user = null;
+  state.officer = null;
+  state.admin = null;
+  state.role = null;
+  localStorage.removeItem('ks_user');
+  showScreen('screen-role');
+  document.getElementById('app-shell').classList.add('hidden');
+}
+
+// ─── APP INIT ───
+function initApp() {
+  showScreen('app-shell');
+  document.getElementById('app-shell').classList.remove('hidden');
+  populateLangSwitcher();
+  buildNav();
+  if (state.role === 'farmer') renderFarmerDashboard();
+  else if (state.role === 'officer') renderOfficerDashboard();
+  else if (state.role === 'admin') renderAdminDashboard();
+  updateNotifCount();
+  applyTranslations();
+  if (state.demoMode) {
+    document.getElementById('demo-badge').style.display = 'block';
+    document.getElementById('demo-panel-toggle').style.display = 'block';
+  }
+}
+
+function buildNav() {
+  const nav = document.getElementById('navbar-nav');
+  nav.innerHTML = '';
+  let items = [];
+  if (state.role === 'farmer') {
+    items = [
+      {key:'dashboard',label:t('dashboard'),page:'dashboard'},
+      {key:'book',label:t('book_slot'),page:'book-slot'},
+      {key:'token',label:t('my_token'),page:'my-token'},
+      {key:'queue',label:t('live_queue'),page:'live-queue'},
+      {key:'procurement',label:t('my_procurement'),page:'my-procurement'},
+      {key:'payments',label:t('payments'),page:'payments'},
+      {key:'profile',label:t('profile'),page:'profile'}
+    ];
+  } else if (state.role === 'officer') {
+    items = [
+      {key:'dashboard',label:t('dashboard'),page:'officer-dashboard'},
+      {key:'queue',label:t('live_queue'),page:'officer-queue'},
+      {key:'bookings',label:t('todays_bookings'),page:'officer-bookings'},
+      {key:'procurement',label:t('procurement'),page:'officer-procurement'},
+      {key:'completed',label:t('completed'),page:'officer-completed'},
+      {key:'qr',label:t('qr_scanner'),page:'officer-qr'}
+    ];
+  } else if (state.role === 'admin') {
+    items = [
+      {key:'dashboard',label:t('dashboard'),page:'admin-dashboard'},
+      {key:'centres',label:t('centres'),page:'admin-centres'},
+      {key:'farmers',label:t('farmers'),page:'admin-farmers'},
+      {key:'bookings',label:t('bookings'),page:'admin-bookings'},
+      {key:'procurement',label:t('procurement'),page:'admin-procurement'},
+      {key:'payments',label:t('payments'),page:'admin-payments'}
+    ];
+  }
+  items.forEach(item => {
+    const a = document.createElement('a');
+    a.className = 'nav-link' + (state.currentPage === item.page ? ' active' : '');
+    a.textContent = item.label;
+    a.onclick = () => { state.currentPage = item.page; buildNav(); navigatePage(item.page); };
+    nav.appendChild(a);
+  });
+}
+
+function navigatePage(page) {
+  state.currentPage = page;
+  buildNav();
+  if (page === 'dashboard') renderFarmerDashboard();
+  else if (page === 'book-slot') renderBookSlot();
+  else if (page === 'my-token') renderMyToken();
+  else if (page === 'live-queue') renderLiveQueue();
+  else if (page === 'my-procurement') renderMyProcurement();
+  else if (page === 'payments') renderPayments();
+  else if (page === 'profile') renderProfile();
+  else if (page === 'officer-dashboard') renderOfficerDashboard();
+  else if (page === 'officer-queue') renderOfficerQueue();
+  else if (page === 'officer-bookings') renderOfficerBookings();
+  else if (page === 'officer-procurement') renderOfficerProcurement();
+  else if (page === 'officer-completed') renderOfficerCompleted();
+  else if (page === 'officer-qr') renderOfficerQR();
+  else if (page === 'admin-dashboard') renderAdminDashboard();
+  else if (page === 'admin-centres') renderAdminCentres();
+  else if (page === 'admin-farmers') renderAdminFarmers();
+  else if (page === 'admin-bookings') renderAdminBookings();
+  else if (page === 'admin-procurement') renderAdminProcurement();
+  else if (page === 'admin-payments') renderAdminPayments();
+}
+
+function goHome() { navigatePage(state.role === 'farmer' ? 'dashboard' : state.role === 'officer' ? 'officer-dashboard' : 'admin-dashboard'); }
+
+// ─── FARMER DASHBOARD ───
+function renderFarmerDashboard() {
+  const main = document.getElementById('app-main');
+  const myBookings = state.bookings.filter(b => b.farmerId === state.user.id);
+  const active = myBookings.filter(b => ['BOOKED','ARRIVED','WAITING','ALMOST_TURN','NOW_SERVING','PROCUREMENT_IN_PROGRESS'].includes(b.status));
+  const recentProc = state.procurements.filter(p => {
+    const b = state.bookings.find(x => x.id === p.bookingId);
+    return b && b.farmerId === state.user.id;
+  }).slice(0,3);
+
+  main.innerHTML = `
+    <div class="container" style="padding-top:1.5rem;padding-bottom:3rem">
+      <div class="page-header">
+        <h1>${t('welcome')}, ${state.user.name}</h1>
+        <p>Dashboard overview for your procurement activities</p>
+      </div>
+      <div class="stat-grid mb-3">
+        <div class="stat-card primary"><div class="stat-value">${myBookings.length}</div><div class="stat-label">${t('total_bookings')}</div></div>
+        <div class="stat-card accent"><div class="stat-value">${active.length}</div><div class="stat-label">${t('active_bookings')}</div></div>
+        <div class="stat-card"><div class="stat-value">${state.procurements.filter(p=>{const b=state.bookings.find(x=>x.id===p.bookingId);return b&&b.farmerId===state.user.id;}).length}</div><div class="stat-label">${t('procurements_completed')}</div></div>
+        <div class="stat-card"><div class="stat-value">₹${state.payments.filter(pay=>{const proc=state.procurements.find(pr=>pr.id===pay.procurementId);if(!proc)return false;const b=state.bookings.find(x=>x.id===proc.bookingId);return b&&b.farmerId===state.user.id&&pay.status==='PAID';}).reduce((s,p)=>s+p.amount,0).toLocaleString()}</div><div class="stat-label">${t('amount_paid')}</div></div>
+      </div>
+      <div class="card mb-3">
+        <div class="card-header"><h3 style="font-size:1rem">${t('quick_actions')}</h3></div>
+        <div class="card-body" style="display:flex;gap:0.75rem;flex-wrap:wrap">
+          <button class="btn btn-primary" onclick="navigatePage('book-slot')">${t('book_slot')}</button>
+          <button class="btn btn-secondary" onclick="navigatePage('live-queue')">${t('live_queue')}</button>
+          <button class="btn btn-accent" onclick="navigatePage('payments')">${t('payments')}</button>
+        </div>
+      </div>
+      <div class="card mb-3">
+        <div class="card-header" style="display:flex;justify-content:space-between;align-items:center"><h3 style="font-size:1rem">${t('active_bookings')}</h3><button class="btn btn-ghost btn-sm" onclick="navigatePage('my-token')">${t('view_all')}</button></div>
+        <div class="card-body">
+          ${active.length === 0 ? `<p style="color:var(--color-muted-fg);font-size:0.85rem">${t('no_data')}</p>` : `
+          <table><thead><tr><th>${t('token')}</th><th>${t('crop')}</th><th>${t('centre')}</th><th>${t('status')}</th><th>${t('action')}</th></tr></thead><tbody>
+          ${active.map(b => {
+            const c = CENTRES.find(x=>x.id===b.centreId);
+            return `<tr><td><span class="badge badge-blue">${b.token}</span></td><td>${b.crop}</td><td>${c?c.name:'-'}</td><td>${statusBadge(b.status)}</td><td><button class="btn btn-sm btn-primary" onclick="viewBooking('${b.id}')">View</button></td></tr>`;
+          }).join('')}
+          </tbody></table>`}
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header" style="display:flex;justify-content:space-between;align-items:center"><h3 style="font-size:1rem">${t('recent_procurement')}</h3><button class="btn btn-ghost btn-sm" onclick="navigatePage('my-procurement')">${t('view_all')}</button></div>
+        <div class="card-body">
+          ${recentProc.length === 0 ? `<p style="color:var(--color-muted-fg);font-size:0.85rem">${t('no_data')}</p>` : `
+          <table><thead><tr><th>${t('date')}</th><th>${t('crop')}</th><th>${t('quantity')}</th><th>${t('total_value')}</th><th>${t('status')}</th></tr></thead><tbody>
+          ${recentProc.map(p => `<tr><td>${fmtDate(p.date)}</td><td>${p.crop}</td><td>${p.acceptedQuantity} ${p.unit}</td><td>₹${p.totalValue.toLocaleString()}</td><td>${statusBadge(p.status)}</td></tr>`).join('')}
+          </tbody></table>`}
+        </div>
+      </div>
+    </div>`;
+}
+
+function statusBadge(status) {
+  const map = {
+    'BOOKED':'badge-blue','CONFIRMED':'badge-blue','ARRIVED':'badge-green','WAITING':'badge-yellow',
+    'ALMOST_TURN':'badge-orange','NOW_SERVING':'badge-green','PROCUREMENT_IN_PROGRESS':'badge-green',
+    'PROCUREMENT_COMPLETED':'badge-green','PAYMENT_PROCESSING':'badge-yellow','PAID':'badge-green',
+    'NO_SHOW':'badge-red','CANCELLED':'badge-red','FAILED':'badge-red','PROCESSING':'badge-yellow'
+  };
+  return `<span class="badge ${map[status]||'badge-gray'}">${status.replace(/_/g,' ')}</span>`;
+}
+
+function fmtDate(d) { return d ? new Date(d).toLocaleDateString() : '-'; }
+function fmtTime(d) { return d ? new Date(d).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) : '-'; }
+
+// ─── BOOK SLOT FLOW ───
+let slotFormData = {crops:[]};
+
+function renderBookSlot() {
+  state.currentPage = 'book-slot';
+  buildNav();
+  const main = document.getElementById('app-main');
+  main.innerHTML = `
+    <div class="container" style="padding-top:1.5rem;padding-bottom:3rem">
+      <div class="page-header"><h1>${t('book_slot')}</h1><p>Select your crop, quantity and find nearby centres</p></div>
+      <div class="card">
+        <div class="card-header"><h3 style="font-size:0.95rem">Step 1: Select Produce</h3></div>
+        <div class="card-body">
+          <div id="crop-rows"></div>
+          <button class="btn btn-outline btn-sm mt-1" onclick="addCropRow()">+ ${t('add_crop')}</button>
+          <div id="crop-error" class="form-error hidden"></div>
+          <div style="display:flex;justify-content:flex-end;margin-top:1rem">
+            <button class="btn btn-primary" onclick="proceedToLocation()">${t('proceed')}</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  if (slotFormData.crops.length === 0) addCropRow();
+  else renderCropRows();
+}
+
+function addCropRow() {
+  slotFormData.crops.push({crop:'',quantity:'',unit:'kg'});
+  renderCropRows();
+}
+
+function removeCropRow(idx) {
+  slotFormData.crops.splice(idx,1);
+  renderCropRows();
+}
+
+function renderCropRows() {
+  const container = document.getElementById('crop-rows');
+  if (!container) return;
+  container.innerHTML = slotFormData.crops.map((c,i) => `
+    <div style="display:grid;grid-template-columns:1fr 120px 140px 40px;gap:0.75rem;align-items:end;margin-bottom:0.75rem" class="crop-row">
+      <div class="form-group" style="margin-bottom:0">
+        <label>${t('crop')} *</label>
+        <div class="search-dropdown" id="crop-dropdown-${i}">
+          <input type="text" placeholder="${t('search_crop')}" value="${c.crop}" onfocus="openCropDropdown(${i})" oninput="filterCrops(${i},this.value)" autocomplete="off">
+          <div class="dropdown-list" id="crop-list-${i}"></div>
+        </div>
+      </div>
+      <div class="form-group" style="margin-bottom:0">
+        <label>${t('quantity')} *</label>
+        <input type="number" min="0.1" step="0.1" value="${c.quantity}" onchange="slotFormData.crops[${i}].quantity=this.value">
+      </div>
+      <div class="form-group" style="margin-bottom:0">
+        <label>${t('unit')} *</label>
+        <select onchange="slotFormData.crops[${i}].unit=this.value">${UNITS.map(u=>`<option value="${u.code}" ${c.unit===u.code?'selected':''}>${u.name}</option>`).join('')}</select>
+      </div>
+      ${slotFormData.crops.length>1?`<button class="btn btn-ghost" style="padding:0.5rem" onclick="removeCropRow(${i})"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-destructive)" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>`:'<div></div>'}
+    </div>
+  `).join('');
+}
+
+function openCropDropdown(idx) {
+  const list = document.getElementById('crop-list-'+idx);
+  const dd = document.getElementById('crop-dropdown-'+idx);
+  list.innerHTML = CROPS.map(c => `<div class="dropdown-item" onclick="selectCrop(${idx},'${c}')">${c}</div>`).join('');
+  dd.classList.add('open');
+}
+
+function filterCrops(idx, val) {
+  slotFormData.crops[idx].crop = val;
+  const list = document.getElementById('crop-list-'+idx);
+  const filtered = CROPS.filter(c => c.toLowerCase().includes(val.toLowerCase()));
+  list.innerHTML = filtered.map(c => `<div class="dropdown-item" onclick="selectCrop(${idx},'${c}')">${c}</div>`).join('');
+}
+
+function selectCrop(idx, crop) {
+  slotFormData.crops[idx].crop = crop;
+  const dd = document.getElementById('crop-dropdown-'+idx);
+  dd.querySelector('input').value = crop;
+  dd.classList.remove('open');
+}
+
+function proceedToLocation() {
+  const error = document.getElementById('crop-error');
+  for (let c of slotFormData.crops) {
+    if (!c.crop || !c.quantity || parseFloat(c.quantity) <= 0) {
+      error.textContent = 'Please fill all crop fields with valid quantities';
+      error.classList.remove('hidden');
+      return;
+    }
+  }
+  error.classList.add('hidden');
+  renderLocationScreen();
+}
+
+function renderLocationScreen() {
+  const main = document.getElementById('app-main');
+  main.innerHTML = `
+    <div class="container" style="padding-top:1.5rem;padding-bottom:3rem">
+      <div class="page-header"><h1>Location</h1><p>${t('location_desc')}</p></div>
+      <div class="card" style="text-align:center;padding:2rem">
+        <div style="width:64px;height:64px;border-radius:var(--radius-lg);background:var(--color-primary-8);display:flex;align-items:center;justify-content:center;margin:0 auto 1rem">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        </div>
+        <button class="btn btn-primary btn-lg" onclick="getLocation()">${t('allow_location')}</button>
+        <div style="margin:1rem 0;color:var(--color-muted-fg)">— or —</div>
+        <button class="btn btn-outline" onclick="showManualLocation()">${t('enter_manual')}</button>
+      </div>
+    </div>`;
+}
+
+function getLocation() {
+  if (!navigator.geolocation) { showManualLocation(); return; }
+  navigator.geolocation.getCurrentPosition(
+    pos => { slotFormData.lat = pos.coords.latitude; slotFormData.lng = pos.coords.longitude; renderCentres(); },
+    err => { showManualLocation(); }
+  );
+}
+
+function showManualLocation() {
+  const main = document.getElementById('app-main');
+  main.innerHTML = `
+    <div class="container" style="padding-top:1.5rem;padding-bottom:3rem">
+      <div class="page-header"><h1>Enter Location</h1></div>
+      <div class="card">
+        <div class="card-body">
+          <div class="form-group">
+            <label>${t('state')}</label>
+            <select id="manual-state" onchange="populateManualDistricts()"><option value="">${t('select_state')}</option>${Object.keys(STATES_DISTRICTS).map(s=>`<option value="${s}">${s}</option>`).join('')}</select>
+          </div>
+          <div class="form-group">
+            <label>${t('district')}</label>
+            <select id="manual-district"><option value="">${t('select_district')}</option></select>
+          </div>
+          <div style="display:flex;justify-content:flex-end;gap:0.5rem;margin-top:1rem">
+            <button class="btn btn-ghost" onclick="renderLocationScreen()">Back</button>
+            <button class="btn btn-primary" onclick="manualLocationProceed()">${t('proceed')}</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function populateManualDistricts() {
+  const st = document.getElementById('manual-state').value;
+  const sel = document.getElementById('manual-district');
+  sel.innerHTML = '<option value="">'+t('select_district')+'</option>';
+  if (st && STATES_DISTRICTS[st]) {
+    STATES_DISTRICTS[st].forEach(d => { const o=document.createElement('option');o.value=d;o.textContent=d;sel.appendChild(o); });
+  }
+}
+
+function manualLocationProceed() {
+  const st = document.getElementById('manual-state').value;
+  const dist = document.getElementById('manual-district').value;
+  if (!st || !dist) return;
+  slotFormData.manualState = st;
+  slotFormData.manualDistrict = dist;
+  // Use approximate coords for state+district
+  slotFormData.lat = 20 + Math.random()*15;
+  slotFormData.lng = 72 + Math.random()*20;
+  renderCentres();
+}
+
+function haversine(lat1,lng1,lat2,lng2) {
+  const R=6371; const dLat=(lat2-lat1)*Math.PI/180; const dLng=(lng2-lng1)*Math.PI/180;
+  const a=Math.sin(dLat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+
+function renderCentres() {
+  const main = document.getElementById('app-main');
+  const farmerLat = slotFormData.lat;
+  const farmerLng = slotFormData.lng;
+  const centres = CENTRES.map(c => {
+    const dist = haversine(farmerLat,farmerLng,c.lat,c.lng);
+    return {...c, distance: dist};
+  }).sort((a,b)=>a.distance-b.distance).slice(0,100);
+
+  main.innerHTML = `
+    <div class="container" style="padding-top:1.5rem;padding-bottom:3rem">
+      <div class="page-header"><h1>${t('nearby_centres')}</h1><p>Found ${centres.length} centres sorted by distance</p></div>
+      <div class="centre-grid">
+        ${centres.map(c => {
+          const firstCrop = slotFormData.crops[0];
+          const reqQtyKg = parseFloat(firstCrop.quantity) * UNITS.find(u=>u.code===firstCrop.unit).factor;
+          const availQty = c.cropCapacity[firstCrop.crop] || 0;
+          const insufficient = reqQtyKg > availQty;
+          const load = c.currentQueue ? (c.currentQueue / (c.activeCounters * 10)) : 0;
+          const loadClass = load > 0.8 ? 'high' : load > 0.5 ? 'medium' : '';
+          const gmap = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(c.name+','+c.address)}`;
+          return `
+          <div class="centre-card">
+            <div class="centre-card-header">
+              <div>
+                <a href="${gmap}" target="_blank" class="centre-name">${c.name}</a>
+                <div class="centre-meta">${c.address} &middot; ${c.distance.toFixed(1)} km</div>
+              </div>
+              <span class="badge ${loadClass==='high'?'badge-red':loadClass==='medium'?'badge-yellow':'badge-green'}">${load>0.8?'High':load>0.5?'Medium':'Low'} Load</span>
+            </div>
+            <div class="centre-card-body">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;font-size:0.78rem;margin-bottom:0.75rem">
+                <div><span style="color:var(--color-muted-fg)">${t('available_slots')}:</span> <strong>${Math.max(0, c.dailyCapacity - (c.bookedCount||0))}</strong></div>
+                <div><span style="color:var(--color-muted-fg)">${t('current_queue')}:</span> <strong>${c.currentQueue||0}</strong></div>
+                <div><span style="color:var(--color-muted-fg)">${t('estimated_wait')}:</span> <strong>${Math.ceil((c.currentQueue||0)*c.avgProcessTime/Math.max(1,c.activeCounters))} min</strong></div>
+                <div><span style="color:var(--color-muted-fg)">Counters:</span> <strong>${c.activeCounters}</strong></div>
+              </div>
+              <div style="font-size:0.78rem;margin-bottom:0.5rem"><span style="color:var(--color-muted-fg)">Accepts:</span> ${c.acceptedCrops.join(', ')}</div>
+              ${insufficient ? `<div class="alert alert-error" style="margin:0.5rem 0;padding:0.5rem;font-size:0.78rem">${t('insufficient_capacity',{avail: (availQty/100).toFixed(1)+' Q', req: firstCrop.quantity+' '+firstCrop.unit})}</div>` : ''}
+              <div class="centre-capacity-bar"><div class="centre-capacity-fill ${loadClass}" style="width:${Math.min(100,((c.bookedCount||0)/c.dailyCapacity)*100)}%"></div></div>
+            </div>
+            <div class="centre-card-footer">
+              <button class="btn btn-primary w-full" onclick="selectCentre('${c.id}')" ${insufficient?'disabled':''}>${t('book')}</button>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+}
+
+function selectCentre(centreId) {
+  slotFormData.centreId = centreId;
+  renderSlotSelection();
+}
+
+function renderSlotSelection() {
+  const main = document.getElementById('app-main');
+  const centre = CENTRES.find(c=>c.id===slotFormData.centreId);
+  const today = new Date().toISOString().split('T')[0];
+  const slots = [
+    {time:'09:00-10:00',label:'9–10 AM'},
+    {time:'10:00-11:00',label:'10–11 AM'},
+    {time:'11:00-12:00',label:'11 AM–12 PM'},
+    {time:'12:00-13:00',label:'12–1 PM'},
+    {time:'13:00-14:00',label:'1–2 PM'},
+    {time:'14:00-15:00',label:'2–3 PM'},
+    {time:'15:00-16:00',label:'3–4 PM'},
+    {time:'16:00-17:00',label:'4–5 PM'}
+  ];
+
+  // Mock booked counts per slot
+  const bookedMap = {};
+  slots.forEach(s => bookedMap[s.time] = Math.floor(Math.random()*10));
+
+  const firstCrop = slotFormData.crops[0];
+
+  main.innerHTML = `
+    <div class="container" style="padding-top:1.5rem;padding-bottom:3rem">
+      <div class="page-header">
+        <h1>${t('select_slot')}</h1>
+        <p>${centre.name} — ${firstCrop.crop} ${firstCrop.quantity} ${firstCrop.unit} — ${today}</p>
+      </div>
+      <div class="card">
+        <div class="card-body" style="overflow-x:auto">
+          <table>
+            <thead><tr><th>${t('time')}</th><th>${t('total_capacity')}</th><th>${t('available_slots')}</th><th>${t('booked')}</th><th>${t('status')}</th><th>${t('action')}</th></tr></thead>
+            <tbody>
+              ${slots.map(s => {
+                const booked = bookedMap[s.time];
+                const avail = Math.max(0, 10 - booked);
+                const full = avail === 0;
+                return `<tr>
+                  <td><strong>${s.label}</strong></td>
+                  <td>10</td>
+                  <td>${avail}</td>
+                  <td>${booked}</td>
+                  <td>${full ? '<span class="badge badge-red">'+t('not_available')+'</span>' : '<span class="badge badge-green">Available</span>'}</td>
+                  <td><button class="btn btn-sm btn-primary" onclick="bookSlot('${s.time}','${s.label}')" ${full?'disabled':''}>${t('book')}</button></td>
+                </tr>`;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>`;
+}
+
+function bookSlot(time, label) {
+  const centre = CENTRES.find(c=>c.id===slotFormData.centreId);
+  const firstCrop = slotFormData.crops[0];
+  const token = generateToken();
+  const bookingId = 'BK-' + new Date().getFullYear() + '-' + String(Math.floor(Math.random()*99999)).padStart(5,'0');
+  const booking = {
+    id: bookingId,
+    farmerId: state.user.id,
+    centreId: centre.id,
+    token: token,
+    crop: firstCrop.crop,
+    quantity: firstCrop.quantity,
+    unit: firstCrop.unit,
+    date: new Date().toISOString().split('T')[0],
+    timeSlot: label,
+    timeRaw: time,
+    status: 'BOOKED',
+    bookingTime: new Date().toISOString(),
+    queuePosition: null,
+    counter: null,
+    officerId: null
+  };
+  state.bookings.push(booking);
+  saveBookings();
+  addNotification(state.user.id, 'Booking Confirmed', `Your slot is confirmed at ${centre.name} for ${label}. Token: ${token}`, 'booking');
+  state.currentBookingId = bookingId;
+  renderBookingConfirmation(booking);
+}
+
+function generateToken() {
+  const prefix = String.fromCharCode(65 + Math.floor(Math.random()*26));
+  const num = String(Math.floor(Math.random()*999)).padStart(3,'0');
+  return prefix + '-' + num;
+}
+
+function saveBookings() { localStorage.setItem('ks_bookings', JSON.stringify(state.bookings)); }
+function saveProcurements() { localStorage.setItem('ks_procurements', JSON.stringify(state.procurements)); }
+function savePayments() { localStorage.setItem('ks_payments', JSON.stringify(state.payments)); }
+function saveNotifications() { localStorage.setItem('ks_notifications', JSON.stringify(state.notifications)); }
+function saveQREvents() { localStorage.setItem('ks_qr_events', JSON.stringify(state.qrEvents)); }
+
+function renderBookingConfirmation(booking) {
+  const main = document.getElementById('app-main');
+  const centre = CENTRES.find(c=>c.id===booking.centreId);
+  main.innerHTML = `
+    <div class="container" style="padding-top:1.5rem;padding-bottom:3rem">
+      <div class="text-center mb-3">
+        <div style="width:64px;height:64px;border-radius:50%;background:var(--color-success-bg);display:flex;align-items:center;justify-content:center;margin:0 auto 1rem">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--color-success-fg)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <h1 style="font-size:1.5rem;margin-bottom:0.5rem">${t('booking_confirmed')}</h1>
+        <p style="color:var(--color-muted-fg)">Your booking has been confirmed successfully</p>
+      </div>
+      <div class="card" style="max-width:560px;margin:0 auto">
+        <div class="card-body">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;font-size:0.85rem">
+            <div><div style="color:var(--color-muted-fg);font-size:0.75rem">${t('farmer_name')}</div><strong>${state.user.name}</strong></div>
+            <div><div style="color:var(--color-muted-fg);font-size:0.75rem">${t('token')}</div><strong style="font-size:1.2rem;color:var(--color-primary)">${booking.token}</strong></div>
+            <div><div style="color:var(--color-muted-fg);font-size:0.75rem">${t('booking_id')}</div><strong>${booking.id}</strong></div>
+            <div><div style="color:var(--color-muted-fg);font-size:0.75rem">${t('centre')}</div><strong>${centre.name}</strong></div>
+            <div><div style="color:var(--color-muted-fg);font-size:0.75rem">${t('crop')}</div><strong>${booking.crop}</strong></div>
+            <div><div style="color:var(--color-muted-fg);font-size:0.75rem">${t('expected_quantity')}</div><strong>${booking.quantity} ${booking.unit}</strong></div>
+            <div><div style="color:var(--color-muted-fg);font-size:0.75rem">${t('date')}</div><strong>${booking.date}</strong></div>
+            <div><div style="color:var(--color-muted-fg);font-size:0.75rem">${t('time')}</div><strong>${booking.timeSlot}</strong></div>
+            <div><div style="color:var(--color-muted-fg);font-size:0.75rem">${t('status')}</div>${statusBadge(booking.status)}</div>
+          </div>
+          <div class="qr-wrap mt-2">
+            <canvas id="qr-canvas" width="180" height="180"></canvas>
+            <div style="font-size:0.75rem;color:var(--color-muted-fg);text-align:center">Secure Booking Token:<br><strong>${booking.token}</strong></div>
+          </div>
+          <div style="display:flex;gap:0.5rem;margin-top:1rem">
+            <button class="btn btn-outline flex-1" onclick="downloadQR()">${t('download_qr')}</button>
+            <button class="btn btn-primary flex-1" onclick="navigatePage('live-queue')">${t('view_live_queue')}</button>
+          </div>
+        </div>
+      </div>
+      <div class="card mt-2" style="max-width:560px;margin:0 auto">
+        <div class="card-header"><h4 style="font-size:0.9rem">${t('whatsapp_demo')}</h4></div>
+        <div class="card-body">
+          <p style="font-size:0.8rem;color:var(--color-muted-fg);margin-bottom:0.5rem">${t('whatsapp_demo_msg')}</p>
+          <div style="background:var(--color-success-bg);border:1px solid var(--color-border-success);border-radius:var(--radius-md);padding:0.75rem;font-size:0.82rem;line-height:1.5">
+            <strong>Fasal-Slot Booking Confirmation</strong><br>
+            Name: ${state.user.name}<br>
+            Centre: ${centre.name}<br>
+            Date: ${booking.date}<br>
+            Time: ${booking.timeSlot}<br>
+            Token: ${booking.token}<br>
+            Booking ID: ${booking.id}<br>
+            Please arrive 15 minutes early with your QR code.
+          </div>
+        </div>
+      </div>
+    </div>`;
+  drawQR(document.getElementById('qr-canvas'), booking.token);
+}
+
+function drawQR(canvas, text) {
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const size = 180; const cells = 25; const cell = size/cells;
+  const root = getComputedStyle(document.documentElement);
+  const bg = root.getPropertyValue('--color-white').trim() || '#ffffff';
+  const fg = root.getPropertyValue('--color-fg').trim() || '#14532d';
+  ctx.fillStyle = bg; ctx.fillRect(0,0,size,size);
+  ctx.fillStyle = fg;
+  // Simple pseudo-random pattern based on text hash
+  let hash = 0;
+  for (let i=0;i<text.length;i++) hash = ((hash<<5)-hash)+text.charCodeAt(i);
+  const rand = (seed) => { const x = Math.sin(seed++)*10000; return x-Math.floor(x); };
+  let s = hash;
+  for (let r=0;r<cells;r++) {
+    for (let c=0;c<cells;c++) {
+      if (rand(s++) > 0.5) ctx.fillRect(c*cell+2,r*cell+2,cell-2,cell-2);
+    }
+  }
+  // Draw finder patterns
+  ctx.fillStyle = bg;
+  [[2,2],[2,cells-10],[cells-10,2]].forEach(([cx,cy]) => {
+    ctx.fillRect(cx*cell,cy*cell,9*cell,9*cell);
+    ctx.fillStyle = fg; ctx.fillRect(cx*cell+cell,cy*cell+cell,7*cell,7*cell);
+    ctx.fillStyle = bg; ctx.fillRect(cx*cell+2*cell,cy*cell+2*cell,5*cell,5*cell);
+    ctx.fillStyle = fg; ctx.fillRect(cx*cell+3*cell,cy*cell+3*cell,3*cell,3*cell);
+    ctx.fillStyle = bg;
+  });
+}
+
+function downloadQR() {
+  const canvas = document.getElementById('qr-canvas');
+  if (!canvas) return;
+  const link = document.createElement('a');
+  link.download = 'Fasal-Slot-qr.png';
+  link.href = canvas.toDataURL();
+  link.click();
+}
+
+function viewBooking(id) {
+  const b = state.bookings.find(x=>x.id===id);
+  if (b) { state.currentBookingId = id; renderMyToken(); }
+}
+
+// ─── MY TOKEN / BOOKINGS ───
+function renderMyToken() {
+  const main = document.getElementById('app-main');
+  const myBookings = state.bookings.filter(b=>b.farmerId===state.user.id).sort((a,b)=>new Date(b.bookingTime)-new Date(a.bookingTime));
+  main.innerHTML = `
+    <div class="container" style="padding-top:1.5rem;padding-bottom:3rem">
+      <div class="page-header"><h1>${t('my_token')}</h1><p>Your booking tokens and QR codes</p></div>
+      ${myBookings.length===0?'<div class="card"><div class="card-body"><p style="color:var(--color-muted-fg)">'+t('no_data')+'</p></div></div>':''}
+      ${myBookings.map(b => {
+        const centre = CENTRES.find(c=>c.id===b.centreId);
+        return `
+        <div class="card mb-2">
+          <div class="card-body">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:1rem">
+              <div>
+                <div style="font-size:1.3rem;font-weight:700;color:var(--color-primary);font-family:var(--font-heading)">${b.token}</div>
+                <div style="font-size:0.82rem;color:var(--color-muted-fg)">${b.id} &middot; ${b.crop} &middot; ${b.quantity} ${b.unit}</div>
+                <div style="font-size:0.82rem;margin-top:0.25rem">${centre?centre.name:'-'} &middot; ${b.date} &middot; ${b.timeSlot}</div>
+              </div>
+              <div style="text-align:right">${statusBadge(b.status)}</div>
+            </div>
+            <div style="display:flex;gap:0.5rem;margin-top:1rem">
+              <button class="btn btn-sm btn-outline" onclick="showBookingQR('${b.id}')">${t('show_qr')}</button>
+              <button class="btn btn-sm btn-primary" onclick="state.currentBookingId='${b.id}';navigatePage('live-queue')">${t('view_live_queue')}</button>
+            </div>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`;
+}
+
+function showBookingQR(bookingId) {
+  const b = state.bookings.find(x=>x.id===bookingId);
+  if (!b) return;
+  const modal = document.createElement('div');
+  modal.className = 'modal-overlay';
+  modal.innerHTML = `
+    <div class="modal-content">
+      <div class="modal-header"><h3>QR Code — ${b.token}</h3><button class="btn btn-ghost btn-sm" onclick="this.closest('.modal-overlay').remove()">Close</button></div>
+      <div class="modal-body" style="text-align:center">
+        <canvas id="modal-qr" width="200" height="200"></canvas>
+        <p style="font-size:0.8rem;color:var(--color-muted-fg);margin-top:0.75rem">Booking ID: ${b.id}<br>Secure token only — no personal data</p>
+      </div>
+      <div class="modal-footer"><button class="btn btn-primary" onclick="downloadModalQR()">${t('download_qr')}</button></div>
+    </div>`;
+  document.body.appendChild(modal);
+  setTimeout(() => drawQR(document.getElementById('modal-qr'), b.token), 50);
+}
+
+function downloadModalQR() {
+  const canvas = document.getElementById('modal-qr');
+  if (!canvas) return;
+  const link = document.createElement('a');
+  link.download = 'Fasal-Slot-qr.png';
+  link.href = canvas.toDataURL();
+  link.click();
+}
+
+// ─── LIVE QUEUE ───
+function renderLiveQueue() {
+  const main = document.getElementById('app-main');
+  const myBookings = state.bookings.filter(b=>b.farmerId===state.user.id && ['BOOKED','ARRIVED','WAITING','ALMOST_TURN','NOW_SERVING','PROCUREMENT_IN_PROGRESS'].includes(b.status));
+  if (myBookings.length === 0) {
+    main.innerHTML = `
+      <div class="container" style="padding-top:1.5rem;padding-bottom:3rem">
+        <div class="page-header"><h1>${t('live_queue')}</h1></div>
+        <div class="card"><div class="card-body"><p style="color:var(--color-muted-fg)">You have no active bookings in the queue.</p></div></div>
+      </div>`;
+    return;
+  }
+  const booking = state.currentBookingId ? state.bookings.find(b=>b.id===state.currentBookingId) : myBookings[0];
+  if (!booking) return;
+  const centre = CENTRES.find(c=>c.id===booking.centreId);
+  const centreBookings = state.bookings.filter(b=>b.centreId===booking.centreId && ['ARRIVED','WAITING','ALMOST_TURN','NOW_SERVING','PROCUREMENT_IN_PROGRESS'].includes(b.status));
+  const sorted = centreBookings.sort((a,b)=>new Date(a.bookingTime)-new Date(b.bookingTime));
+  const myIndex = sorted.findIndex(b=>b.id===booking.id);
+  const nowServing = sorted.find(b=>b.status==='NOW_SERVING'||b.status==='PROCUREMENT_IN_PROGRESS');
+  const farmersAhead = Math.max(0, myIndex);
+  const estWaitMin = farmersAhead * (centre?centre.avgProcessTime:6) / Math.max(1, centre?centre.activeCounters:1);
+  const estTurn = new Date(Date.now() + estWaitMin*60000);
+  const confidence = estWaitMin < 15 ? t('high_confidence') : estWaitMin < 45 ? t('medium_confidence') : t('low_confidence');
+
+  main.innerHTML = `
+    <div class="container" style="padding-top:1.5rem;padding-bottom:3rem">
+      <div class="page-header"><h1>${t('live_queue')}</h1><p>${centre?centre.name:'-'}</p></div>
+      <div class="card mb-3">
+        <div class="card-body">
+          <div class="queue-big">
+            <div class="queue-label">${t('your_token')}</div>
+            <div class="queue-token">${booking.token}</div>
+            ${nowServing?`<div class="queue-now-serving">${t('now_serving')} <span style="color:var(--color-primary)">${nowServing.token}</span></div>`:''}
+          </div>
+          <div class="queue-stats">
+            <div class="queue-stat"><div class="queue-stat-value">${farmersAhead}</div><div class="queue-stat-label">${t('farmers_ahead')}</div></div>
+            <div class="queue-stat"><div class="queue-stat-value">~${Math.ceil(estWaitMin)} min</div><div class="queue-stat-label">${t('estimated_waiting')}</div></div>
+            <div class="queue-stat"><div class="queue-stat-value">${estTurn.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</div><div class="queue-stat-label">${t('estimated_turn')}</div></div>
+          </div>
+          <div class="text-center mt-2">
+            <span class="badge badge-gray">${confidence}</span>
+            <div style="margin-top:0.5rem;font-size:0.85rem">${t('current_status')}: ${statusBadge(booking.status)}</div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><h3 style="font-size:0.95rem">Progress</h3></div>
+        <div class="card-body">
+          <div class="timeline">
+            ${['BOOKED','ARRIVED','WAITING','ALMOST_TURN','NOW_SERVING','PROCUREMENT_COMPLETED'].map((s,i) => {
+              const statusOrder = ['BOOKED','ARRIVED','WAITING','ALMOST_TURN','NOW_SERVING','PROCUREMENT_COMPLETED'];
+              const currentIdx = statusOrder.indexOf(booking.status==='PROCUREMENT_IN_PROGRESS'?'NOW_SERVING':booking.status);
+              const done = i < currentIdx;
+              const current = i === currentIdx;
+              const labels = {BOOKED:'Slot Booked',ARRIVED:'Farmer Arrived',WAITING:'In Queue',ALMOST_TURN:'Almost Your Turn',NOW_SERVING:'Now Serving',PROCUREMENT_COMPLETED:'Procurement Completed'};
+              return `
+              <div class="timeline-item">
+                <div class="timeline-dot ${done?'done':''} ${current?'current':''}"></div>
+                <div class="timeline-content">
+                  <div class="${done?'status done':current?'status current':'status pending'}">${labels[s]}</div>
+                </div>
+              </div>`;
+            }).join('')}
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
+// ─── NOTIFICATIONS ───
+function addNotification(farmerId, title, text, type) {
+  const notif = {
+    id: 'N'+Date.now(),
+    farmerId,
+    title,
+    text,
+    type,
+    read: false,
+    timestamp: new Date().toISOString()
+  };
+  state.notifications.unshift(notif);
+  saveNotifications();
+  updateNotifCount();
+}
+
+function updateNotifCount() {
+  const relevant = state.notifications.filter(n => {
+    if (state.role === 'farmer') return n.farmerId === state.user.id;
+    return true;
+  });
+  const unread = relevant.filter(n => !n.read).length;
+  const badge = document.getElementById('notif-count');
+  if (badge) {
+    badge.textContent = unread;
+    badge.classList.toggle('hidden', unread === 0);
+  }
+}
+
+function toggleNotifications() {
+  const panel = document.getElementById('notif-panel');
+  panel.classList.toggle('hidden');
+  if (!panel.classList.contains('hidden')) renderNotifications();
+}
+
+function renderNotifications() {
+  const list = document.getElementById('notif-list');
+  const relevant = state.notifications.filter(n => {
+    if (state.role === 'farmer') return n.farmerId === state.user.id;
+    return true;
+  }).slice(0,20);
+  if (relevant.length === 0) { list.innerHTML = '<p style="color:var(--color-muted-fg);font-size:0.85rem;text-align:center">No notifications</p>'; return; }
+  list.innerHTML = relevant.map(n => `
+    <div class="notif-item ${n.read?'read':'unread'}" onclick="markNotifRead('${n.id}')">
+      <div class="notif-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg></div>
+      <div class="notif-body">
+        <div class="notif-title">${n.title}</div>
+        <div class="notif-text">${n.text}</div>
+        <div class="notif-time">${new Date(n.timestamp).toLocaleString()}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function markNotifRead(id) {
+  const n = state.notifications.find(x=>x.id===id);
+  if (n) { n.read = true; saveNotifications(); updateNotifCount(); renderNotifications(); }
+}
+
+function markAllRead() {
+  state.notifications.forEach(n => { if (state.role==='farmer'&&n.farmerId===state.user.id) n.read=true; else if (state.role!=='farmer') n.read=true; });
+  saveNotifications(); updateNotifCount(); renderNotifications();
+}
+
+// ─── MY PROCUREMENT ───
+function renderMyProcurement() {
+  const main = document.getElementById('app-main');
+  const myProc = state.procurements.filter(p=>{
+    const b = state.bookings.find(x=>x.id===p.bookingId);
+    return b && b.farmerId === state.user.id;
+  }).sort((a,b)=>new Date(b.date)-new Date(a.date));
+
+  main.innerHTML = `
+    <div class="container" style="padding-top:1.5rem;padding-bottom:3rem">
+      <div class="page-header"><h1>${t('my_procurement')}</h1></div>
+      ${myProc.length===0?'<div class="card"><div class="card-body"><p style="color:var(--color-muted-fg)">'+t('no_data')+'</p></div></div>':''}
+      ${myProc.map(p => {
+        const b = state.bookings.find(x=>x.id===p.bookingId);
+        const stages = [
+          {key:'BOOKED',label:'Slot Booked'},{key:'ARRIVED',label:'Farmer Arrived'},{key:'WEIGHING',label:'Weighing'},
+          {key:'QUALITY',label:'Quality Check'},{key:'PROCUREMENT_COMPLETED',label:'Procurement Completed'},
+          {key:'PAYMENT_PROCESSING',label:'Payment Processing'},{key:'PAID',label:'Payment Completed'}
+        ];
+        const currentStage = p.status==='PAID'?6:p.status==='PAYMENT_PROCESSING'?5:4;
+        return `
+        <div class="card mb-3">
+          <div class="card-header" style="display:flex;justify-content:space-between;align-items:center">
+            <div><h3 style="font-size:0.95rem">${b?b.crop:'-'} — ${p.procurementId}</h3><div style="font-size:0.78rem;color:var(--color-muted-fg)">${fmtDate(p.date)}</div></div>
+            ${statusBadge(p.status)}
+          </div>
+          <div class="card-body">
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:0.75rem;font-size:0.82rem;margin-bottom:1rem">
+              <div><div style="color:var(--color-muted-fg);font-size:0.72rem">Expected</div><strong>${p.expectedQuantity} ${p.unit}</strong></div>
+              <div><div style="color:var(--color-muted-fg);font-size:0.72rem">Measured</div><strong>${p.measuredQuantity} ${p.unit}</strong></div>
+              <div><div style="color:var(--color-muted-fg);font-size:0.72rem">Accepted</div><strong>${p.acceptedQuantity} ${p.unit}</strong></div>
+              <div><div style="color:var(--color-muted-fg);font-size:0.72rem">Quality</div><strong>${p.qualityGrade}</strong></div>
+              <div><div style="color:var(--color-muted-fg);font-size:0.72rem">Price</div><strong>₹${p.pricePerUnit}/${p.unit}</strong></div>
+              <div><div style="color:var(--color-muted-fg);font-size:0.72rem">Total Value</div><strong style="color:var(--color-primary)">₹${p.totalValue.toLocaleString()}</strong></div>
+            </div>
+            <div class="timeline">
+              ${stages.map((s,i) => `
+                <div class="timeline-item">
+                  <div class="timeline-dot ${i<currentStage?'done':''} ${i===currentStage?'current':''}"></div>
+                  <div class="timeline-content">
+                    <div class="${i<currentStage?'status done':i===currentStage?'status current':'status pending'}">${s.label}</div>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`;
+}
+
+// ─── PAYMENTS ───
+function renderPayments() {
+  const main = document.getElementById('app-main');
+  const myPayments = state.payments.filter(pay=>{
+    const proc = state.procurements.find(pr=>pr.id===pay.procurementId);
+    if (!proc) return false;
+    const b = state.bookings.find(x=>x.id===proc.bookingId);
+    return b && b.farmerId === state.user.id;
+  }).sort((a,b)=>new Date(b.paymentDate||b.date)-new Date(a.paymentDate||a.date));
+
+  const totalPaid = myPayments.filter(p=>p.status==='PAID').reduce((s,p)=>s+p.amount,0);
+  const totalProcessing = myPayments.filter(p=>p.status==='PROCESSING').reduce((s,p)=>s+p.amount,0);
+
+  main.innerHTML = `
+    <div class="container" style="padding-top:1.5rem;padding-bottom:3rem">
+      <div class="page-header"><h1>${t('payments')}</h1></div>
+      <div class="stat-grid mb-3">
+        <div class="stat-card primary"><div class="stat-value">₹${totalPaid.toLocaleString()}</div><div class="stat-label">${t('amount_paid')}</div></div>
+        <div class="stat-card accent"><div class="stat-value">₹${totalProcessing.toLocaleString()}</div><div class="stat-label">${t('processing')}</div></div>
+      </div>
+      <div class="card mb-3">
+        <div class="card-header"><h3 style="font-size:0.95rem">${t('payment_history')}</h3></div>
+        <div class="card-body" style="overflow-x:auto">
+          ${myPayments.length===0?'<p style="color:var(--color-muted-fg)">'+t('no_data')+'</p>':`
+          <table>
+            <thead><tr><th>${t('date')}</th><th>${t('procurement')}</th><th>${t('amount')}</th><th>${t('status')}</th><th>${t('transaction_ref')}</th></tr></thead>
+            <tbody>
+              ${myPayments.map(p => `
+                <tr>
+                  <td>${fmtDate(p.paymentDate||p.date)}</td>
+                  <td>${p.procurementId}</td>
+                  <td>₹${p.amount.toLocaleString()}</td>
+                  <td>${statusBadge(p.status)}</td>
+                  <td>${p.transactionRef||'-'}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>`}
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><h3 style="font-size:0.95rem">${t('demo_mode')} — ${t('simulate_payment')}</h3></div>
+        <div class="card-body">
+          <p style="font-size:0.82rem;color:var(--color-muted-fg);margin-bottom:1rem">Use these buttons to simulate payment states for demonstration.</p>
+          <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
+            <button class="btn btn-secondary" onclick="demoStartPayment()">${t('simulate_success')}</button>
+            <button class="btn btn-danger" onclick="demoPaymentFail()">${t('simulate_failure')}</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
+// ─── PROFILE ───
+function renderProfile() {
+  const main = document.getElementById('app-main');
+  main.innerHTML = `
+    <div class="container-narrow" style="padding-top:1.5rem;padding-bottom:3rem">
+      <div class="page-header"><h1>${t('profile')}</h1></div>
+      <div class="card">
+        <div class="card-body">
+          <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem">
+            <div style="width:64px;height:64px;border-radius:50%;background:var(--color-primary);color:var(--color-on-primary);display:flex;align-items:center;justify-content:center;font-family:var(--font-heading);font-size:1.5rem;font-weight:900">${state.user.name.charAt(0)}</div>
+            <div><h3 style="font-size:1.1rem">${state.user.name}</h3><div style="font-size:0.82rem;color:var(--color-muted-fg)">@${state.user.username}</div></div>
+          </div>
+          <div style="display:grid;gap:0.75rem;font-size:0.85rem">
+            <div style="display:flex;justify-content:space-between;padding:0.5rem 0;border-bottom:1px solid var(--color-border)"><span style="color:var(--color-muted-fg)">${t('full_name')}</span><strong>${state.user.name}</strong></div>
+            <div style="display:flex;justify-content:space-between;padding:0.5rem 0;border-bottom:1px solid var(--color-border)"><span style="color:var(--color-muted-fg)">${t('mobile')}</span><strong>${maskMobile(state.user.mobile)}</strong></div>
+            <div style="display:flex;justify-content:space-between;padding:0.5rem 0;border-bottom:1px solid var(--color-border)"><span style="color:var(--color-muted-fg)">${t('aadhaar')}</span><strong>${maskAadhaar(state.user.aadhaar)}</strong></div>
+            <div style="display:flex;justify-content:space-between;padding:0.5rem 0;border-bottom:1px solid var(--color-border)"><span style="color:var(--color-muted-fg)">${t('state')}</span><strong>${state.user.state}</strong></div>
+            <div style="display:flex;justify-content:space-between;padding:0.5rem 0;border-bottom:1px solid var(--color-border)"><span style="color:var(--color-muted-fg)">${t('district')}</span><strong>${state.user.district}</strong></div>
+            <div style="display:flex;justify-content:space-between;padding:0.5rem 0;border-bottom:1px solid var(--color-border)"><span style="color:var(--color-muted-fg)">Language</span><strong>${LANGUAGES.find(l=>l.code===state.language)?.name||state.language}</strong></div>
+            <div style="display:flex;justify-content:space-between;padding:0.5rem 0"><span style="color:var(--color-muted-fg)">Registered</span><strong>${fmtDate(state.user.registeredAt)}</strong></div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
+// ─── OFFICER DASHBOARD ───
+function renderOfficerDashboard() {
+  const main = document.getElementById('app-main');
+  const centreId = state.officer.centreId;
+  const centreBookings = state.bookings.filter(b=>b.centreId===centreId);
+  const today = new Date().toISOString().split('T')[0];
+  const todayBookings = centreBookings.filter(b=>b.date===today);
+  const arrived = centreBookings.filter(b=>['ARRIVED','WAITING','ALMOST_TURN'].includes(b.status)).length;
+  const completed = centreBookings.filter(b=>b.status==='PROCUREMENT_COMPLETED'||b.status==='PAID').length;
+  const waiting = centreBookings.filter(b=>['ARRIVED','WAITING','ALMOST_TURN'].includes(b.status)).length;
+  const goingOn = centreBookings.filter(b=>b.status==='NOW_SERVING'||b.status==='PROCUREMENT_IN_PROGRESS').length;
+  const noShows = centreBookings.filter(b=>b.status==='NO_SHOW').length;
+
+  main.innerHTML = `
+    <div class="container" style="padding-top:1.5rem;padding-bottom:3rem">
+      <div class="page-header"><h1>${t('dashboard')}</h1><p>${t('today_overview')}</p></div>
+      <div class="stat-grid mb-3">
+        <div class="stat-card primary"><div class="stat-value">${todayBookings.length}</div><div class="stat-label">${t('total_bookings')}</div></div>
+        <div class="stat-card"><div class="stat-value">${arrived}</div><div class="stat-label">${t('farmers_arrived')}</div></div>
+        <div class="stat-card accent"><div class="stat-value">${completed}</div><div class="stat-label">${t('procurements_completed')}</div></div>
+        <div class="stat-card"><div class="stat-value">${waiting}</div><div class="stat-label">${t('currently_waiting')}</div></div>
+        <div class="stat-card"><div class="stat-value">${goingOn}</div><div class="stat-label">${t('going_on')}</div></div>
+        <div class="stat-card"><div class="stat-value">${noShows}</div><div class="stat-label">${t('no_shows')}</div></div>
+      </div>
+      <div class="card">
+        <div class="card-header" style="display:flex;justify-content:space-between;align-items:center"><h3 style="font-size:0.95rem">${t('quick_actions')}</h3></div>
+        <div class="card-body" style="display:flex;gap:0.75rem;flex-wrap:wrap">
+          <button class="btn btn-primary" onclick="navigatePage('officer-queue')">${t('live_queue')}</button>
+          <button class="btn btn-secondary" onclick="navigatePage('officer-qr')">${t('qr_scanner')}</button>
+          <button class="btn btn-accent" onclick="navigatePage('officer-bookings')">${t('todays_bookings')}</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+function renderOfficerQueue() {
+  const main = document.getElementById('app-main');
+  const centreId = state.officer.centreId;
+  const queue = state.bookings.filter(b=>b.centreId===centreId && ['ARRIVED','WAITING','ALMOST_TURN','NOW_SERVING','PROCUREMENT_IN_PROGRESS'].includes(b.status))
+    .sort((a,b)=>new Date(a.bookingTime)-new Date(b.bookingTime));
+
+  main.innerHTML = `
+    <div class="container" style="padding-top:1.5rem;padding-bottom:3rem">
+      <div class="page-header"><h1>${t('live_queue')}</h1></div>
+      <div class="card">
+        <div class="card-body" style="overflow-x:auto">
+          ${queue.length===0?'<p style="color:var(--color-muted-fg)">No farmers in queue</p>':`
+          <table>
+            <thead><tr><th>${t('token')}</th><th>${t('farmer_name')}</th><th>${t('crop')}</th><th>${t('quantity')}</th><th>${t('status')}</th><th>${t('action')}</th></tr></thead>
+            <tbody>
+              ${queue.map((b,i) => {
+                const farmer = JSON.parse(localStorage.getItem('ks_farmers')||'[]').find(f=>f.id===b.farmerId);
+                return `<tr>
+                  <td><span class="badge badge-blue">${b.token}</span></td>
+                  <td>${farmer?farmer.name:'-'}</td>
+                  <td>${b.crop}</td>
+                  <td>${b.quantity} ${b.unit}</td>
+                  <td>${statusBadge(b.status)}</td>
+                  <td><div class="table-actions">
+                    ${b.status==='WAITING'||b.status==='ARRIVED'?`<button class="btn btn-sm btn-primary" onclick="officerCallNext('${b.id}')">${t('call_next')}</button>`:''}
+                    ${b.status==='NOW_SERVING'?`<button class="btn btn-sm btn-secondary" onclick="officerStartProcurement('${b.id}')">${t('start_procurement')}</button>`:''}
+                    ${b.status==='PROCUREMENT_IN_PROGRESS'?`<button class="btn btn-sm btn-accent" onclick="officerCompleteProcurement('${b.id}')">${t('complete_procurement')}</button>`:''}
+                    <button class="btn btn-sm btn-danger" onclick="officerMarkNoShow('${b.id}')">${t('mark_no_show')}</button>
+                  </div></td>
+                </tr>`;
+              }).join('')}
+            </tbody>
+          </table>`}
+        </div>
+      </div>
+    </div>`;
+}
+
+function officerCallNext(bookingId) {
+  const b = state.bookings.find(x=>x.id===bookingId);
+  if (!b) return;
+  b.status = 'NOW_SERVING';
+  b.counter = 1 + Math.floor(Math.random()*3);
+  saveBookings();
+  addNotification(b.farmerId, 'Now Serving', `Your token ${b.token} is now being served. Please proceed to Counter ${b.counter}.`, 'queue');
+  renderOfficerQueue();
+}
+
+function officerStartProcurement(bookingId) {
+  const b = state.bookings.find(x=>x.id===bookingId);
+  if (!b) return;
+  b.status = 'PROCUREMENT_IN_PROGRESS';
+  saveBookings();
+  renderOfficerProcurementEntry(bookingId);
+}
+
+function officerCompleteProcurement(bookingId) {
+  renderOfficerProcurementEntry(bookingId);
+}
+
+function renderOfficerProcurementEntry(bookingId) {
+  const b = state.bookings.find(x=>x.id===bookingId);
+  if (!b) return;
+  const farmer = JSON.parse(localStorage.getItem('ks_farmers')||'[]').find(f=>f.id===b.farmerId);
+  const centre = CENTRES.find(c=>c.id===b.centreId);
+  const main = document.getElementById('app-main');
+  main.innerHTML = `
+    <div class="container" style="padding-top:1.5rem;padding-bottom:3rem;max-width:600px">
+      <div class="page-header"><h1>Procurement Entry</h1><p>Token: ${b.token} — ${farmer?farmer.name:'-'}</p></div>
+      <div class="card">
+        <div class="card-body">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;font-size:0.85rem">
+            <div><div style="color:var(--color-muted-fg);font-size:0.75rem">${t('farmer_name')}</div><strong>${farmer?farmer.name:'-'}</strong></div>
+            <div><div style="color:var(--color-muted-fg);font-size:0.75rem">${t('token')}</div><strong>${b.token}</strong></div>
+            <div><div style="color:var(--color-muted-fg);font-size:0.75rem">${t('crop')}</div><strong>${b.crop}</strong></div>
+            <div><div style="color:var(--color-muted-fg);font-size:0.75rem">${t('expected_quantity')}</div><strong>${b.quantity} ${b.unit}</strong></div>
+          </div>
+          <form onsubmit="submitProcurement(event,'${bookingId}')">
+            <div class="form-row">
+              <div class="form-group"><label>Actual Measured Quantity (${b.unit})</label><input type="number" step="0.1" id="proc-measured" required></div>
+              <div class="form-group"><label>Accepted Quantity (${b.unit}) *</label><input type="number" step="0.1" id="proc-accepted" required oninput="calcTotal()"></div>
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label>${t('quality_grade')}</label>
+                <select id="proc-quality"><option>Grade A</option><option>Grade B</option><option>Grade C</option></select>
+              </div>
+              <div class="form-group"><label>${t('price_per_unit')} (₹/${b.unit}) *</label><input type="number" id="proc-price" required oninput="calcTotal()"></div>
+            </div>
+            <div class="form-group">
+              <label>${t('total_amount')}</label>
+              <input type="text" id="proc-total" readonly style="font-weight:700;color:var(--color-primary);font-size:1.1rem">
+            </div>
+            <div class="form-group"><label>${t('remarks')}</label><textarea id="proc-remarks" rows="2"></textarea></div>
+            <div style="display:flex;justify-content:flex-end;gap:0.5rem">
+              <button type="button" class="btn btn-ghost" onclick="renderOfficerQueue()">${t('cancel')}</button>
+              <button type="submit" class="btn btn-primary">${t('complete_procurement')}</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>`;
+}
+
+function calcTotal() {
+  const accepted = parseFloat(document.getElementById('proc-accepted')?.value||0);
+  const price = parseFloat(document.getElementById('proc-price')?.value||0);
+  const total = document.getElementById('proc-total');
+  if (total) total.value = '₹ ' + (accepted*price).toLocaleString(undefined,{maximumFractionDigits:2});
+}
+
+function submitProcurement(e, bookingId) {
+  e.preventDefault();
+  const b = state.bookings.find(x=>x.id===bookingId);
+  if (!b) return;
+  const measured = parseFloat(document.getElementById('proc-measured').value);
+  const accepted = parseFloat(document.getElementById('proc-accepted').value);
+  const quality = document.getElementById('proc-quality').value;
+  const price = parseFloat(document.getElementById('proc-price').value);
+  const total = accepted * price;
+  const procurement = {
+    id: 'PRC-'+Date.now(),
+    bookingId: bookingId,
+    procurementId: 'PRC-'+String(Math.floor(Math.random()*99999)).padStart(5,'0'),
+    date: new Date().toISOString(),
+    crop: b.crop,
+    expectedQuantity: b.quantity,
+    measuredQuantity: measured,
+    acceptedQuantity: accepted,
+    unit: b.unit,
+    qualityGrade: quality,
+    pricePerUnit: price,
+    totalValue: total,
+    status: 'PROCUREMENT_COMPLETED',
+    centreId: b.centreId,
+    officerId: state.officer.id,
+    remarks: document.getElementById('proc-remarks').value
+  };
+  state.procurements.push(procurement);
+  saveProcurements();
+  b.status = 'PROCUREMENT_COMPLETED';
+  saveBookings();
+  addNotification(b.farmerId, 'Procurement Completed', `Your procurement for ${b.crop} has been completed. Total value: ₹${total.toLocaleString()}`, 'procurement');
+  renderOfficerQueue();
+}
+
+function officerMarkNoShow(bookingId) {
+  const b = state.bookings.find(x=>x.id===bookingId);
+  if (!b) return;
+  b.status = 'NO_SHOW';
+  saveBookings();
+  addNotification(b.farmerId, 'No Show', `Your booking ${b.token} has been marked as No Show.`, 'alert');
+  renderOfficerQueue();
+}
+
+function renderOfficerBookings() {
+  const main = document.getElementById('app-main');
+  const centreId = state.officer.centreId;
+  const bookings = state.bookings.filter(b=>b.centreId===centreId).sort((a,b)=>new Date(b.bookingTime)-new Date(a.bookingTime));
+  main.innerHTML = `
+    <div class="container" style="padding-top:1.5rem;padding-bottom:3rem">
+      <div class="page-header"><h1>${t('todays_bookings')}</h1></div>
+      <div class="card"><div class="card-body" style="overflow-x:auto">
+        ${bookings.length===0?'<p style="color:var(--color-muted-fg)">No bookings</p>':`
+        <table><thead><tr><th>${t('token')}</th><th>Farmer</th><th>${t('crop')}</th><th>${t('quantity')}</th><th>${t('date')}</th><th>${t('time')}</th><th>${t('status')}</th></tr></thead><tbody>
+        ${bookings.map(b => {
+          const farmer = JSON.parse(localStorage.getItem('ks_farmers')||'[]').find(f=>f.id===b.farmerId);
+          return `<tr><td>${b.token}</td><td>${farmer?farmer.name:'-'}</td><td>${b.crop}</td><td>${b.quantity} ${b.unit}</td><td>${b.date}</td><td>${b.timeSlot}</td><td>${statusBadge(b.status)}</td></tr>`;
+        }).join('')}
+        </tbody></table>`}
+      </div></div>
+    </div>`;
+}
+
+function renderOfficerProcurement() { renderOfficerQueue(); }
+function renderOfficerCompleted() {
+  const main = document.getElementById('app-main');
+  const centreId = state.officer.centreId;
+  const completed = state.procurements.filter(p=>p.centreId===centreId).sort((a,b)=>new Date(b.date)-new Date(a.date));
+  main.innerHTML = `
+    <div class="container" style="padding-top:1.5rem;padding-bottom:3rem">
+      <div class="page-header"><h1>${t('completed')}</h1></div>
+      <div class="card"><div class="card-body" style="overflow-x:auto">
+        ${completed.length===0?'<p style="color:var(--color-muted-fg)">No completed procurements</p>':`
+        <table><thead><tr><th>ID</th><th>Crop</th><th>Accepted</th><th>Quality</th><th>Total Value</th><th>Date</th></tr></thead><tbody>
+        ${completed.map(p => `<tr><td>${p.procurementId}</td><td>${p.crop}</td><td>${p.acceptedQuantity} ${p.unit}</td><td>${p.qualityGrade}</td><td>₹${p.totalValue.toLocaleString()}</td><td>${fmtDate(p.date)}</td></tr>`).join('')}
+        </tbody></table>`}
+      </div></div>
+    </div>`;
+}
+
+function renderOfficerQR() {
+  const main = document.getElementById('app-main');
+  main.innerHTML = `
+    <div class="container" style="padding-top:1.5rem;padding-bottom:3rem;max-width:500px">
+      <div class="page-header"><h1>${t('qr_scanner')}</h1><p>Scan farmer QR code or enter token manually</p></div>
+      <div class="card">
+        <div class="card-body">
+          <div class="scanner-sim">
+            <div style="font-size:0.85rem;color:var(--color-muted-fg);margin-bottom:1rem">Camera access not available in demo. Enter token manually:</div>
+            <input type="text" id="qr-input" placeholder="e.g. A-047" style="text-align:center;font-size:1.1rem;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:1rem">
+            <button class="btn btn-primary" onclick="simulateQRScan()">Scan / Verify</button>
+          </div>
+          <div id="qr-result" style="margin-top:1.5rem;display:none"></div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function simulateQRScan() {
+  const input = document.getElementById('qr-input').value.trim().toUpperCase();
+  const result = document.getElementById('qr-result');
+  const b = state.bookings.find(x=>x.token===input);
+  if (!b) { result.innerHTML = '<div class="alert alert-error">Booking not found for token: '+input+'</div>'; result.style.display='block'; return; }
+  const farmer = JSON.parse(localStorage.getItem('ks_farmers')||'[]').find(f=>f.id===b.farmerId);
+  const centre = CENTRES.find(c=>c.id===b.centreId);
+
+  let stage = 0;
+  const qrEvents = state.qrEvents.filter(e=>e.bookingId===b.id);
+  if (qrEvents.length === 0) stage = 1;
+  else if (qrEvents.length === 1) stage = 2;
+  else if (qrEvents.length === 2) stage = 3;
+  else { result.innerHTML = '<div class="alert alert-warning">All scans already completed for this booking.</div>'; result.style.display='block'; return; }
+
+  if (stage === 1) {
+    b.status = 'ARRIVED';
+    saveBookings();
+    state.qrEvents.push({id:'Q'+Date.now(),bookingId:b.id,scanStage:1,timestamp:new Date().toISOString(),counter:null,officerId:state.officer.id});
+    saveQREvents();
+    result.innerHTML = `<div class="alert alert-success"><strong>${t('entry_verified')}</strong><br>Token: ${b.token}<br>Farmer: ${farmer?farmer.name:'-'}<br>Status updated to ARRIVED</div>`;
+    addNotification(b.farmerId, 'Entry Verified', 'You have been checked in at '+centre.name+'. Please wait in the queue.', 'queue');
+  } else if (stage === 2) {
+    if (b.status !== 'WAITING' && b.status !== 'ARRIVED') {
+      result.innerHTML = '<div class="alert alert-error">'+t('scan_invalid_sequence')+' — farmer must be in WAITING/ARRIVED status.</div>';
+      result.style.display='block'; return;
+    }
+    b.status = 'PROCUREMENT_IN_PROGRESS';
+    b.counter = 1 + Math.floor(Math.random()*3);
+    saveBookings();
+    state.qrEvents.push({id:'Q'+Date.now(),bookingId:b.id,scanStage:2,timestamp:new Date().toISOString(),counter:b.counter,officerId:state.officer.id});
+    saveQREvents();
+    result.innerHTML = `<div class="alert alert-success"><strong>${t('procurement_started')}</strong><br>Token: ${b.token}<br>Counter: ${b.counter}<br>Status updated to PROCUREMENT IN PROGRESS</div>`;
+    addNotification(b.farmerId, 'Procurement Started', `Please proceed to Counter ${b.counter} for procurement.`, 'queue');
+  } else if (stage === 3) {
+    if (b.status !== 'PROCUREMENT_IN_PROGRESS') {
+      result.innerHTML = '<div class="alert alert-error">'+t('scan_invalid_sequence')+' — procurement must be in progress.</div>';
+      result.style.display='block'; return;
+    }
+    b.status = 'PROCUREMENT_COMPLETED';
+    saveBookings();
+    state.qrEvents.push({id:'Q'+Date.now(),bookingId:b.id,scanStage:3,timestamp:new Date().toISOString(),counter:b.counter,officerId:state.officer.id});
+    saveQREvents();
+    result.innerHTML = `<div class="alert alert-success"><strong>${t('procurement_completed')}</strong><br>Token: ${b.token}<br>Status updated to COMPLETED</div>`;
+    addNotification(b.farmerId, 'Procurement Completed', 'Your procurement has been completed. Payment will be processed shortly.', 'procurement');
+  }
+  result.style.display='block';
+}
+
+// ─── ADMIN DASHBOARD ───
+function renderAdminDashboard() {
+  const main = document.getElementById('app-main');
+  const totalFarmers = JSON.parse(localStorage.getItem('ks_farmers')||'[]').length;
+  const totalBookings = state.bookings.length;
+  const waiting = state.bookings.filter(b=>['ARRIVED','WAITING','ALMOST_TURN'].includes(b.status)).length;
+  const completed = state.procurements.length;
+  const totalQty = state.procurements.reduce((s,p)=>s+(p.acceptedQuantity*(p.unit==='q'?100:p.unit==='t'?1000:1)),0);
+  const totalValue = state.procurements.reduce((s,p)=>s+p.totalValue,0);
+  const pendingPay = state.payments.filter(p=>p.status==='PROCESSING').length;
+  const completedPay = state.payments.filter(p=>p.status==='PAID').length;
+
+  main.innerHTML = `
+    <div class="container" style="padding-top:1.5rem;padding-bottom:3rem">
+      <div class="page-header"><h1>${t('dashboard')}</h1><p>System-wide overview and analytics</p></div>
+      <div class="stat-grid mb-3">
+        <div class="stat-card primary"><div class="stat-value">${totalFarmers}</div><div class="stat-label">${t('farmers')}</div></div>
+        <div class="stat-card"><div class="stat-value">${totalBookings}</div><div class="stat-label">${t('bookings')}</div></div>
+        <div class="stat-card"><div class="stat-value">${waiting}</div><div class="stat-label">${t('currently_waiting')}</div></div>
+        <div class="stat-card accent"><div class="stat-value">${completed}</div><div class="stat-label">${t('procurements_completed')}</div></div>
+        <div class="stat-card"><div class="stat-value">${(totalQty/1000).toFixed(1)}T</div><div class="stat-label">Total Qty</div></div>
+        <div class="stat-card"><div class="stat-value">₹${(totalValue/100000).toFixed(2)}L</div><div class="stat-label">Total Value</div></div>
+        <div class="stat-card"><div class="stat-value">${pendingPay}</div><div class="stat-label">Pending Payments</div></div>
+        <div class="stat-card primary"><div class="stat-value">${completedPay}</div><div class="stat-label">Completed Payments</div></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><h3 style="font-size:0.95rem">Centre Monitoring</h3></div>
+        <div class="card-body" style="overflow-x:auto">
+          <table>
+            <thead><tr><th>Centre</th><th>Waiting</th><th>Completed</th><th>Avg Wait</th><th>Counters</th><th>Load</th></tr></thead>
+            <tbody>
+              ${CENTRES.slice(0,12).map(c => {
+                const q = state.bookings.filter(b=>b.centreId===c.id&&['ARRIVED','WAITING'].includes(b.status)).length;
+                const comp = state.procurements.filter(p=>p.centreId===c.id).length;
+                const load = q > 20 ? 'High' : q > 8 ? 'Medium' : 'Low';
+                return `<tr><td>${c.name}</td><td>${q}</td><td>${comp}</td><td>${c.avgProcessTime*q/Math.max(1,c.activeCounters)} min</td><td>${c.activeCounters}</td><td>${statusBadge(load.toUpperCase())}</td></tr>`;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>`;
+}
+
+function renderAdminCentres() {
+  const main = document.getElementById('app-main');
+  main.innerHTML = `
+    <div class="container" style="padding-top:1.5rem;padding-bottom:3rem">
+      <div class="page-header"><h1>${t('centres')}</h1></div>
+      <div class="card"><div class="card-body" style="overflow-x:auto">
+        <table>
+          <thead><tr><th>ID</th><th>Name</th><th>State</th><th>District</th><th>Crops</th><th>Daily Cap</th><th>Counters</th></tr></thead>
+          <tbody>
+            ${CENTRES.map(c => `<tr><td>${c.id}</td><td>${c.name}</td><td>${c.state}</td><td>${c.district}</td><td>${c.acceptedCrops.join(', ')}</td><td>${c.dailyCapacity}</td><td>${c.activeCounters}</td></tr>`).join('')}
+          </tbody>
+        </table>
+      </div></div>
+    </div>`;
+}
+
+function renderAdminFarmers() {
+  const main = document.getElementById('app-main');
+  const farmers = JSON.parse(localStorage.getItem('ks_farmers')||'[]');
+  main.innerHTML = `
+    <div class="container" style="padding-top:1.5rem;padding-bottom:3rem">
+      <div class="page-header"><h1>${t('farmers')}</h1></div>
+      <div class="card"><div class="card-body" style="overflow-x:auto">
+        <table>
+          <thead><tr><th>ID</th><th>Name</th><th>Mobile</th><th>State</th><th>District</th><th>Registered</th></tr></thead>
+          <tbody>
+            ${farmers.map(f => `<tr><td>${f.id}</td><td>${f.name}</td><td>${maskMobile(f.mobile)}</td><td>${f.state}</td><td>${f.district}</td><td>${fmtDate(f.registeredAt)}</td></tr>`).join('')}
+          </tbody>
+        </table>
+      </div></div>
+    </div>`;
+}
+
+function renderAdminBookings() {
+  const main = document.getElementById('app-main');
+  main.innerHTML = `
+    <div class="container" style="padding-top:1.5rem;padding-bottom:3rem">
+      <div class="page-header"><h1>${t('bookings')}</h1></div>
+      <div class="card"><div class="card-body" style="overflow-x:auto">
+        <table>
+          <thead><tr><th>ID</th><th>Token</th><th>Farmer</th><th>Centre</th><th>Crop</th><th>Qty</th><th>Date</th><th>Status</th></tr></thead>
+          <tbody>
+            ${state.bookings.map(b => {
+              const farmer = JSON.parse(localStorage.getItem('ks_farmers')||'[]').find(f=>f.id===b.farmerId);
+              return `<tr><td>${b.id}</td><td>${b.token}</td><td>${farmer?farmer.name:'-'}</td><td>${b.centreId}</td><td>${b.crop}</td><td>${b.quantity} ${b.unit}</td><td>${b.date}</td><td>${statusBadge(b.status)}</td></tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+      </div></div>
+    </div>`;
+}
+
+function renderAdminProcurement() {
+  const main = document.getElementById('app-main');
+  main.innerHTML = `
+    <div class="container" style="padding-top:1.5rem;padding-bottom:3rem">
+      <div class="page-header"><h1>${t('procurement')}</h1></div>
+      <div class="card"><div class="card-body" style="overflow-x:auto">
+        <table>
+          <thead><tr><th>ID</th><th>Booking</th><th>Crop</th><th>Accepted</th><th>Quality</th><th>Value</th><th>Status</th></tr></thead>
+          <tbody>
+            ${state.procurements.map(p => `<tr><td>${p.procurementId}</td><td>${p.bookingId}</td><td>${p.crop}</td><td>${p.acceptedQuantity} ${p.unit}</td><td>${p.qualityGrade}</td><td>₹${p.totalValue.toLocaleString()}</td><td>${statusBadge(p.status)}</td></tr>`).join('')}
+          </tbody>
+        </table>
+      </div></div>
+    </div>`;
+}
+
+function renderAdminPayments() {
+  const main = document.getElementById('app-main');
+  main.innerHTML = `
+    <div class="container" style="padding-top:1.5rem;padding-bottom:3rem">
+      <div class="page-header"><h1>${t('payments')}</h1></div>
+      <div class="card"><div class="card-body" style="overflow-x:auto">
+        <table>
+          <thead><tr><th>ID</th><th>Procurement</th><th>Amount</th><th>Status</th><th>Ref</th><th>Date</th></tr></thead>
+          <tbody>
+            ${state.payments.map(p => `<tr><td>${p.id}</td><td>${p.procurementId}</td><td>₹${p.amount.toLocaleString()}</td><td>${statusBadge(p.status)}</td><td>${p.transactionRef||'-'}</td><td>${fmtDate(p.paymentDate)}</td></tr>`).join('')}
+          </tbody>
+        </table>
+      </div></div>
+    </div>`;
+}
+
+// ─── DEMO CONTROLS ───
+function toggleDemoPanel() { document.getElementById('demo-panel').classList.toggle('open'); }
+
+function demoCallNext() {
+  const centreId = state.officer ? state.officer.centreId : (state.bookings[0]?.centreId);
+  if (!centreId) return;
+  const waiting = state.bookings.filter(b=>b.centreId===centreId && (b.status==='WAITING'||b.status==='ARRIVED')).sort((a,b)=>new Date(a.bookingTime)-new Date(b.bookingTime));
+  if (waiting.length > 0) officerCallNext(waiting[0].id);
+}
+
+function demoEntryScan() {
+  const b = state.bookings.find(x=>x.status==='BOOKED');
+  if (!b) return;
+  b.status = 'ARRIVED';
+  saveBookings();
+  state.qrEvents.push({id:'Q'+Date.now(),bookingId:b.id,scanStage:1,timestamp:new Date().toISOString(),counter:null,officerId:'DEMO'});
+  saveQREvents();
+  addNotification(b.farmerId, 'Demo: Entry Verified', 'Entry scan simulated.', 'queue');
+  refreshPage();
+}
+
+function demoOfficeScan() {
+  const b = state.bookings.find(x=>x.status==='WAITING'||x.status==='ARRIVED');
+  if (!b) return;
+  b.status = 'PROCUREMENT_IN_PROGRESS';
+  b.counter = 2;
+  saveBookings();
+  state.qrEvents.push({id:'Q'+Date.now(),bookingId:b.id,scanStage:2,timestamp:new Date().toISOString(),counter:2,officerId:'DEMO'});
+  saveQREvents();
+  addNotification(b.farmerId, 'Demo: Now Serving', 'Please proceed to Counter 2.', 'queue');
+  refreshPage();
+}
+
+function demoCompleteScan() {
+  const b = state.bookings.find(x=>x.status==='PROCUREMENT_IN_PROGRESS');
+  if (!b) return;
+  b.status = 'PROCUREMENT_COMPLETED';
+  saveBookings();
+  state.qrEvents.push({id:'Q'+Date.now(),bookingId:b.id,scanStage:3,timestamp:new Date().toISOString(),counter:b.counter,officerId:'DEMO'});
+  saveQREvents();
+  addNotification(b.farmerId, 'Demo: Procurement Completed', 'Procurement finished. Payment processing.', 'procurement');
+  refreshPage();
+}
+
+function demoStartPayment() {
+  const b = state.bookings.find(x=>x.status==='PROCUREMENT_COMPLETED');
+  if (!b) return;
+  const existing = state.procurements.find(p=>p.bookingId===b.id);
+  if (!existing) {
+    const procurement = {
+      id: 'PRC-'+Date.now(), bookingId: b.id, procurementId: 'PRC-'+String(Math.floor(Math.random()*99999)).padStart(5,'0'),
+      date: new Date().toISOString(), crop: b.crop, expectedQuantity: b.quantity, measuredQuantity: b.quantity,
+      acceptedQuantity: parseFloat(b.quantity)*0.97, unit: b.unit, qualityGrade: 'Grade A', pricePerUnit: 2356,
+      totalValue: parseFloat(b.quantity)*0.97*2356*(b.unit==='q'?100:b.unit==='t'?1000:1),
+      status: 'PAYMENT_PROCESSING', centreId: b.centreId, officerId: 'DEMO', remarks: ''
+    };
+    state.procurements.push(procurement);
+    saveProcurements();
+  }
+  const payment = {
+    id: 'PAY-'+Date.now(), procurementId: existing?existing.procurementId:('PRC-'+String(Math.floor(Math.random()*99999)).padStart(5,'0')),
+    amount: existing?existing.totalValue:100000, status: 'PROCESSING', transactionRef: null, paymentDate: null, date: new Date().toISOString()
+  };
+  state.payments.push(payment);
+  savePayments();
+  b.status = 'PAYMENT_PROCESSING';
+  saveBookings();
+  addNotification(b.farmerId, 'Payment Processing', 'Your payment is being processed.', 'payment');
+  refreshPage();
+}
+
+function demoPaymentSuccess() {
+  const pay = state.payments.find(p=>p.status==='PROCESSING');
+  if (!pay) return;
+  pay.status = 'PAID';
+  pay.transactionRef = 'DEMO-REF-'+Date.now();
+  pay.paymentDate = new Date().toISOString();
+  savePayments();
+  const proc = state.procurements.find(p=>p.id===pay.procurementId||p.procurementId===pay.procurementId);
+  if (proc) { proc.status = 'PAID'; saveProcurements(); }
+  const b = state.bookings.find(x=>x.status==='PAYMENT_PROCESSING');
+  if (b) { b.status = 'PAID'; saveBookings(); addNotification(b.farmerId, 'Payment Completed', `₹${pay.amount.toLocaleString()} has been credited. Ref: ${pay.transactionRef}`, 'payment'); }
+  refreshPage();
+}
+
+function demoPaymentFail() {
+  const pay = state.payments.find(p=>p.status==='PROCESSING');
+  if (!pay) return;
+  pay.status = 'FAILED';
+  savePayments();
+  refreshPage();
+}
+
+function demoNotifyQueue() {
+  if (!state.user) return;
+  addNotification(state.user.id, 'Queue Update', 'You are currently 5 positions away.', 'queue');
+}
+
+function demoNotifyServing() {
+  if (!state.user) return;
+  addNotification(state.user.id, 'Now Serving', 'Your token is now being served. Proceed to Counter 2.', 'queue');
+}
+
+function demoNotifyCompleted() {
+  if (!state.user) return;
+  addNotification(state.user.id, 'Procurement Completed', 'Your procurement has been completed successfully.', 'procurement');
+}
+
+function refreshPage() { navigatePage(state.currentPage); updateNotifCount(); }
+
+// ─── MOBILE NAV ───
+function toggleMobileNav() { document.getElementById('navbar-nav').classList.toggle('open'); }
+
+// ─── SCROLL TOP ───
+window.addEventListener('scroll', () => {
+  document.getElementById('scroll-top').classList.toggle('visible', window.scrollY > 400);
+});
+
+// ─── INIT ───
+document.addEventListener('DOMContentLoaded', () => {
+  initLanguageScreen();
+  if (state.language) {
+    document.getElementById('lang-search').value = LANGUAGES.find(l=>l.code===state.language)?.name || '';
+    document.getElementById('lang-badge').textContent = LANGUAGES.find(l=>l.code===state.language)?.name || '';
+    document.getElementById('lang-selected').style.display = 'block';
+    document.getElementById('btn-confirm-lang').disabled = false;
+    showScreen('screen-role');
+    applyTranslations();
+  }
+  if (state.user && state.role === 'farmer') { initApp(); }
+});
+</script>
+</body>
+</html>
